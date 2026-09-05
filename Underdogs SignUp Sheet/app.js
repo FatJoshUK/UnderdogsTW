@@ -39,6 +39,7 @@ const shared = new URLSearchParams(location.search).get('view');
 const state = JSON.parse(localStorage.getItem('underdogs-builder') || '{}');
 state.groups ??= 3; state.players ??= 5;
 state.data ??= { players: ['Player One', 'Player Two'], units: ['Imperial Spearmen', 'Iron Reapers', 'Silahdars'], artillery: ['Cannon', 'Grapeshot Cannon'] };
+state.data.artillery ??= [];
 state.data.units = [...new Set([...state.data.units, ...suppliedUnits])];
 state.data.artillery = [...new Set([...state.data.artillery, ...suppliedArtillery])];
 state.plans ??= {};

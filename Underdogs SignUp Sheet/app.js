@@ -293,6 +293,10 @@ function renderLists() {
 function renderBattleLog() {
   const count = $('#battleCount');
   if (count) count.textContent = `${state.battles.length} ${state.battles.length === 1 ? 'record' : 'records'}`;
+  const wins = state.battles.filter(battle => battle.outcome === 'victory').length;
+  const losses = state.battles.filter(battle => battle.outcome === 'defeat').length;
+  if ($('#battleWins')) $('#battleWins').textContent = wins;
+  if ($('#battleLosses')) $('#battleLosses').textContent = losses;
   const history = $('#battleHistory');
   if (!history) return;
   history.innerHTML = state.battles.length ? [...state.battles].reverse().map((battle, reverseIndex) => {

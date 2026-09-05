@@ -305,6 +305,7 @@ function renderBattleLog() {
 }
 
 let leaderboardSort = { key: 'rate', direction: 'desc' };
+let leaderboardSearch = '';
 
 function renderAttendanceLeaderboard() {
   const warCount = state.data.players.reduce((max, name) => {
@@ -317,12 +318,13 @@ function renderAttendanceLeaderboard() {
     const total = stat.attended + stat.missed;
     return { name, total, attended: stat.attended, missed: stat.missed, rate: total ? Math.round((stat.attended / total) * 100) : 0 };
   });
-  rows.sort((a, b) => {
+  const filteredRows = rows.filter(row => row.name.toLowerCase().includes(leaderboardSearch));
+  filteredRows.sort((a, b) => {
     const comparison = leaderboardSort.key === 'name' ? a.name.localeCompare(b.name) : a[leaderboardSort.key] - b[leaderboardSort.key];
     return leaderboardSort.direction === 'asc' ? comparison : -comparison;
   });
   const body = $('#leaderboardBody');
-  if (body) body.innerHTML = rows.length ? rows.map(row => `<tr><td class="leaderboard-player"><span class="player-avatar">${escapeHtml(row.name.slice(0, 1).toUpperCase())}</span><strong>${escapeHtml(row.name)}</strong></td><td>${row.total}</td><td><span class="score-pill attended">${row.attended}</span></td><td><span class="score-pill missed">${row.missed}</span></td><td><div class="rate-cell"><strong>${row.rate}%</strong><span class="rate-track"><i style="width:${row.rate}%"></i></span></div></td></tr>`).join('') : '<tr><td colspan="5" class="leaderboard-empty">Add players in the Roster Vault to start tracking attendance.</td></tr>';
+  if (body) body.innerHTML = filteredRows.length ? filteredRows.map(row => `<tr><td class="leaderboard-player"><span class="player-avatar">${escapeHtml(row.name.slice(0, 1).toUpperCase())}</span><strong>${escapeHtml(row.name)}</strong></td><td>${row.total}</td><td><span class="score-pill attended">${row.attended}</span></td><td><span class="score-pill missed">${row.missed}</span></td><td><div class="rate-cell"><strong>${row.rate}%</strong><span class="rate-track"><i style="width:${row.rate}%"></i></span></div></td></tr>`).join('') : `<tr><td colspan="5" class="leaderboard-empty">${leaderboardSearch ? 'No players match your search.' : 'Add players in the Roster Vault to start tracking attendance.'}</td></tr>`;
 }
 
 function renderAttendanceEditor() {
@@ -356,6 +358,12 @@ document.querySelectorAll('.stats-subtab').forEach(tab => tab.onclick = () => {
   if (view) { view.classList.remove('hidden'); view.classList.add('active'); }
   if (tab.dataset.statsView === 'attendanceLeaderboardView') renderAttendanceLeaderboard();
 });
+
+const leaderboardSearchInput = $('#leaderboardSearch');
+if (leaderboardSearchInput) leaderboardSearchInput.oninput = event => {
+  leaderboardSearch = event.target.value.trim().toLowerCase();
+  renderAttendanceLeaderboard();
+};
 
 document.querySelectorAll('.sort-button').forEach(button => button.onclick = () => {
   const key = button.dataset.sortKey;

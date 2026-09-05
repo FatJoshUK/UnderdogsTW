@@ -38,6 +38,7 @@ state.data ??= { players: ['Player One', 'Player Two'], units: ['Imperial Spearm
 state.data.units = [...new Set([...state.data.units, ...suppliedUnits])];
 state.plans ??= {};
 state.stats ??= {};
+state.battleHistory ??= [];
 state.fiefs ??= {
   fief1: { name: 'Anഭt', type: 'Village', status: 'owned', notes: 'Primary resource node.' },
   fief2: { name: 'Reginopolis', type: 'City', status: 'enemy', notes: 'Heavy fortification.' },
@@ -51,6 +52,11 @@ const $ = s => document.querySelector(s);
 if (shared) {
   try { Object.assign(state, JSON.parse(decodeURIComponent(escape(atob(shared))))); } catch { /* Fallback */ }
 }
+state.stats ??= {};
+state.battleHistory ??= [];
+
+let leaderboardSearch = '';
+let leaderboardSort = { key: 'rate', direction: 'desc' };
 
 function configureSearchInput(input, id, values, placeholder) { 
   input.placeholder = placeholder; 
@@ -279,18 +285,44 @@ function renderLists() {
   }); 
 }
 
-function renderStats() {
-  const rows = state.data.players.map(name => ({ name, ...(state.stats[name] || { attended: 0, missed: 0 }) }));
-  const anyWars = rows.some(row => row.attended || row.missed);
-  if ($('#statsEmpty')) $('#statsEmpty').classList.toggle('hidden', anyWars); 
-  if ($('#statsTableWrap')) $('#statsTableWrap').classList.toggle('hidden', !anyWars);
-  if ($('#statsBody')) {
-    $('#statsBody').innerHTML = rows.map(row => { 
-      const total = row.attended + row.missed; 
-      const rate = total ? Math.round((row.attended / total) * 100) : 0; 
-      return `<tr><td>${escapeHtml(row.name)}</td><td>${row.attended}</td><td>${row.missed}</td><td class="rate">${rate}%</td></tr>`; 
-    }).join('');
+function renderBattleLog() {
+  const records = state.battleHistory || [];
+  const wins = records.filter(record => record.outcome === 'win').length;
+  const losses = records.filter(record => record.outcome === 'loss').length;
+  if ($('#totalWins')) $('#totalWins').textContent = wins;
+  if ($('#totalLosses')) $('#totalLosses').textContent = losses;
+  if ($('#battleLogEmpty')) $('#battleLogEmpty').classList.toggle('hidden', records.length > 0);
+  if ($('#battleLogWrap')) $('#battleLogWrap').classList.toggle('hidden', records.length === 0);
+  if ($('#battleLogBody')) $('#battleLogBody').innerHTML = records.slice().reverse().map(record => `<tr><td>${escapeHtml(record.date)}</td><td>${record.roster.length} / ${state.data.players.length} assigned</td><td><select class="outcome-select ${record.outcome}" data-record-id="${record.id}" aria-label="Battle outcome"><option value="win" ${record.outcome === 'win' ? 'selected' : ''}>Win</option><option value="loss" ${record.outcome === 'loss' ? 'selected' : ''}>Loss</option></select></td><td><button class="remove history-remove" data-record-id="${record.id}" aria-label="Delete battle record">×</button></td></tr>`).join('');
+}
+
+function renderLeaderboard() {
+  const search = leaderboardSearch.trim().toLowerCase();
+  const rows = state.data.players.map(name => {
+    const stat = state.stats[name] || { attended: 0, missed: 0 };
+    const attended = Number(stat.attended) || 0;
+    const missed = Number(stat.missed) || 0;
+    const total = attended + missed;
+    return { name, attended, missed, total, rate: total ? Math.round((attended / total) * 100) : 0 };
+  }).filter(row => row.name.toLowerCase().includes(search));
+  rows.sort((a, b) => {
+    const first = a[leaderboardSort.key];
+    const second = b[leaderboardSort.key];
+    const result = typeof first === 'string' ? first.localeCompare(second) : first - second;
+    return result * (leaderboardSort.direction === 'asc' ? 1 : -1);
+  });
+  const hasPlayers = state.data.players.length > 0;
+  if ($('#leaderboardEmpty')) {
+    $('#leaderboardEmpty').textContent = hasPlayers && search ? 'No players match your search.' : 'Add players in the Roster Vault to start tracking attendance.';
+    $('#leaderboardEmpty').classList.toggle('hidden', rows.length > 0);
   }
+  if ($('#leaderboardWrap')) $('#leaderboardWrap').classList.toggle('hidden', rows.length === 0);
+  if ($('#leaderboardBody')) $('#leaderboardBody').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.total}</td><td><span class="metric-pill attended">${row.attended}</span></td><td><span class="metric-pill missed">${row.missed}</span></td><td class="rate">${row.rate}%</td></tr>`).join('');
+}
+
+function renderStats() {
+  renderBattleLog();
+  renderLeaderboard();
 }
 
 function renderAttendanceEditor() {
@@ -302,6 +334,24 @@ function renderAttendanceEditor() {
     }).join('') || '<tr><td colspan="3">Add players in the Roster Vault first.</td></tr>';
   }
 }
+
+document.querySelectorAll('.stats-tab').forEach(tab => tab.onclick = () => {
+  document.querySelectorAll('.stats-tab,.stats-section').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.stats-tab').forEach(x => x.setAttribute('aria-selected', 'false'));
+  document.querySelectorAll('.stats-section').forEach(x => x.hidden = true);
+  tab.classList.add('active');
+  tab.setAttribute('aria-selected', 'true');
+  const target = $(`#${tab.dataset.statsTab}`);
+  if (target) { target.classList.add('active'); target.hidden = false; }
+});
+
+const leaderboardSearchInput = $('#leaderboardSearch');
+if (leaderboardSearchInput) leaderboardSearchInput.oninput = e => { leaderboardSearch = e.target.value; renderLeaderboard(); };
+document.querySelectorAll('.sort-button').forEach(button => button.onclick = () => {
+  const key = button.dataset.sortKey;
+  leaderboardSort = leaderboardSort.key === key ? { key, direction: leaderboardSort.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: key === 'name' ? 'asc' : 'desc' };
+  renderLeaderboard();
+});
 
 document.querySelectorAll('.tabs .tab').forEach(tab => tab.onclick = () => { 
   document.querySelectorAll('.tab,.panel').forEach(x => x.classList.remove('active')); 
@@ -366,13 +416,28 @@ document.querySelectorAll('.data-card form').forEach(form => form.onsubmit = e =
   } 
 });
 
-document.addEventListener('click', e => { 
-  if (!e.target.matches('.remove')) return; 
-  state.data[e.target.dataset.type].splice(+e.target.dataset.index, 1); 
-  save(); 
-  renderLists(); 
-  renderBuilder(); 
-  renderStats(); 
+document.addEventListener('click', e => {
+  if (e.target.matches('.history-remove')) {
+    state.battleHistory = state.battleHistory.filter(record => record.id !== Number(e.target.dataset.recordId));
+    save();
+    renderStats();
+    return;
+  }
+  if (!e.target.matches('.remove')) return;
+  state.data[e.target.dataset.type].splice(+e.target.dataset.index, 1);
+  save();
+  renderLists();
+  renderBuilder();
+  renderStats();
+});
+
+document.addEventListener('change', e => {
+  if (!e.target.matches('.outcome-select')) return;
+  const record = state.battleHistory.find(item => item.id === Number(e.target.dataset.recordId));
+  if (!record) return;
+  record.outcome = e.target.value;
+  save();
+  renderBattleLog();
 });
 
 const saveAttBtn = $('#saveAttendance');
@@ -449,8 +514,9 @@ if (confirmWarBtn) {
       if (roster.includes(name)) stat.attended++; 
       else stat.missed++; 
     });
-    save(); 
-    renderStats(); 
+    state.battleHistory.push({ id: Date.now(), date: new Date().toLocaleDateString(), roster, outcome: 'win' });
+    save();
+    renderStats();
     const details = $('#confirmDetails');
     if (details) details.textContent = `${roster.length} attended · ${Math.max(0, state.data.players.length - roster.length)} did not attend`;
     const res = $('#confirmResult');
@@ -472,7 +538,7 @@ if (discordExpBtn) {
 const shareLinkBtn = $('#shareLink');
 if (shareLinkBtn) {
   shareLinkBtn.onclick = () => { 
-    const view = { groups: state.groups, players: state.players, units: state.units, data: state.data, plans: state.plans, stats: state.stats, fiefs: state.fiefs }; 
+    const view = { groups: state.groups, players: state.players, units: state.units, data: state.data, plans: state.plans, stats: state.stats, battleHistory: state.battleHistory, fiefs: state.fiefs }; 
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(view)))); 
     const url = `${location.href.split('?')[0]}?view=${encoded}`; 
     copyText(url, () => { 

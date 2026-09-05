@@ -70,8 +70,20 @@
 
       <section id="stats" class="panel">
         <div class="stats-heading"><p class="eyebrow">TERRITORY WAR RECORD</p><h2>House Stats</h2><p>Attendance is recorded each time a roster is confirmed.</p></div>
-        <div id="statsEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
-        <div id="statsTableWrap" class="stats-table-wrap hidden"><table><thead><tr><th>House member</th><th>Attended</th><th>Did not attend</th><th>Attendance rate</th></tr></thead><tbody id="statsBody"></tbody></table></div>
+        <div class="stats-tabs" role="tablist" aria-label="Stats views">
+          <button class="stats-tab active" data-stats-tab="battle-log" role="tab" aria-selected="true">Battle Log</button>
+          <button class="stats-tab" data-stats-tab="attendance-leaderboard" role="tab" aria-selected="false">Attendance Leaderboard</button>
+        </div>
+        <section id="battle-log" class="stats-section active" role="tabpanel">
+          <div class="history-summary"><div><span class="summary-label">BATTLE HISTORY</span><h3>Campaign results</h3></div><div class="record-summary"><span class="wins"><b id="totalWins">0</b> Wins</span><span class="losses"><b id="totalLosses">0</b> Losses</span></div></div>
+          <div id="battleLogEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
+          <div id="battleLogWrap" class="stats-table-wrap hidden"><table><thead><tr><th>Date</th><th>Roster</th><th>Outcome</th><th>Actions</th></tr></thead><tbody id="battleLogBody"></tbody></table></div>
+        </section>
+        <section id="attendance-leaderboard" class="stats-section" role="tabpanel" hidden>
+          <div class="leaderboard-head"><div><span class="summary-label">ROSTER VAULT</span><h3>Attendance leaderboard</h3></div><input id="leaderboardSearch" type="search" placeholder="Search player name..." aria-label="Search player name" /></div>
+          <div id="leaderboardEmpty" class="stats-empty">Add players in the Roster Vault to start tracking attendance.</div>
+          <div id="leaderboardWrap" class="stats-table-wrap hidden"><table><thead><tr><th><button class="sort-button" data-sort-key="name">Player Name <span>↕</span></button></th><th><button class="sort-button" data-sort-key="total">Total Wars Tracked <span>↕</span></button></th><th><button class="sort-button" data-sort-key="attended">Attended Count <span>↕</span></button></th><th><button class="sort-button" data-sort-key="missed">Missed TW Count <span>↕</span></button></th><th><button class="sort-button" data-sort-key="rate">Attendance Rate <span>↕</span></button></th></tr></thead><tbody id="leaderboardBody"></tbody></table></div>
+        </section>
       </section>
 
       <section id="vault" class="panel">

@@ -109,3 +109,14 @@
     resize: vertical;
     min-height: 80px;
 }
+
+.stats-tabs{display:flex;gap:6px;margin:24px 0 14px;border-bottom:1px solid var(--line)}
+.stats-tab{border:0;background:transparent;color:var(--muted);padding:11px 15px;font:700 13px 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.stats-tab.active{background:var(--accent);color:var(--dark)}
+.stats-section{display:none}.stats-section.active{display:block}
+.history-summary,.leaderboard-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px}
+.summary-label{display:block;color:var(--muted);font:700 11px 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase}.history-summary h3,.leaderboard-head h3{margin:3px 0 0;font:700 24px 'Barlow Condensed';text-transform:uppercase}
+.record-summary{display:flex;gap:18px;font:700 13px 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase}.record-summary b{font-size:22px;margin-right:4px}.wins b{color:#64c98a}.losses b{color:#c77878}
+.leaderboard-head input{width:min(280px,100%);padding:10px 12px;background:#17181d;border:1px solid var(--line);color:var(--ink);font:14px 'DM Sans'}.sort-button{border:0;background:none;color:inherit;font:inherit;font-weight:inherit;cursor:pointer;padding:0;text-align:left}.sort-button span{color:var(--accent);margin-left:4px}.stats-table-wrap table{width:100%;border-collapse:collapse}.stats-table-wrap th{color:var(--muted);font:700 11px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;text-align:left;padding:11px 10px;border-bottom:1px solid var(--line)}.stats-table-wrap td{padding:13px 10px;border-bottom:1px solid #2d2e34;font-size:13px}.metric-pill{display:inline-block;min-width:28px;padding:3px 8px;border-radius:999px;text-align:center;font-weight:700}.metric-pill.attended{background:#214d39;color:#8be0ab}.metric-pill.missed{background:#3b292c;color:#cf9696}.rate{color:var(--accent);font-weight:700}.outcome-select{background:#17181d;border:1px solid var(--line);padding:5px 8px;color:var(--ink);font:700 12px 'Barlow Condensed';text-transform:uppercase}.outcome-select.win{border-color:#3b8b61;color:#8be0ab}.outcome-select.loss{border-color:#8b4c4c;color:#cf9696}.history-remove{background:transparent!important;color:var(--muted);font-size:18px}
+@media (max-width:700px){.history-summary,.leaderboard-head{align-items:flex-start;flex-direction:column}.leaderboard-head input{width:100%}.stats-table-wrap{overflow-x:auto}.stats-table-wrap table{min-width:620px}.stats-tabs{overflow-x:auto}.stats-tab{white-space:nowrap}}
+.hidden{display:none!important}

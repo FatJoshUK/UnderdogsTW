@@ -117,7 +117,7 @@ function renderBuilder() {
     
     const input = group.querySelector('.group-name'); 
     if (input) {
-      input.value = state.plans[groupId]?.name || `Strike Group ${g + 1}`;
+      input.value = state.plans[groupId]?.name || `Group ${g + 1}`;
       input.onchange = e => { (state.plans[groupId] ??= {}).name = e.target.value; save(); };
     }
     
@@ -420,7 +420,7 @@ function discordSummary() {
   const roster = currentRoster(); 
   const groups = []; 
   for(let g = 0; g < state.groups; g++) { 
-    const name = state.plans[`g${g}`]?.name || `Strike Group ${g + 1}`; 
+    const name = state.plans[`g${g}`]?.name || `Group ${g + 1}`; 
     const members = []; 
     for(let p = 0; p < state.players; p++) { 
       const plan = state.plans[`g${g}-p${p}`]; 

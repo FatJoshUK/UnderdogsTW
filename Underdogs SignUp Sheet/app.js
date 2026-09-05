@@ -314,7 +314,8 @@ document.querySelectorAll('.tabs .tab').forEach(tab => tab.onclick = () => {
   tab.classList.add('active'); 
   const targetPanel = $(`#${tab.dataset.tab}`);
   if (targetPanel) targetPanel.classList.add('active'); 
-  if (tab.dataset.tab === 'stats') renderStats(); 
+  if (tab.dataset.tab === 'stats') renderStats();
+  if (tab.dataset.tab === 'vault') renderLists();
   if (tab.dataset.tab === 'warplan') {
     renderCampaignMap();
     renderFiefDetails();

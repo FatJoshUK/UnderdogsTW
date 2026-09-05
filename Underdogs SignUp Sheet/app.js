@@ -108,6 +108,7 @@ function setupControls() {
 }
 
 function renderBuilder() {
+  state.data.artillery = [...new Set([...(state.data.artillery || []), ...suppliedArtillery])];
   $('#playerTotal').textContent = state.groups * state.players;
   const area = $('#groups'); 
   if (!area) return;
@@ -276,7 +277,8 @@ function renderFiefDetails() {
   };
 }
 
-function renderLists() { 
+function renderLists() {
+  state.data.artillery = [...new Set([...(state.data.artillery || []), ...suppliedArtillery])];
   ['players','units','artillery'].forEach(type => { 
     const list = $(`#${type}List`); 
     if (list) {
@@ -489,8 +491,9 @@ if (shareLinkBtn) {
   };
 }
 
-setupControls(); 
-renderBuilder(); 
+setupControls();
+renderBuilder();
+renderLists();
 renderCampaignMap();
 renderFiefDetails();
 

@@ -17,6 +17,10 @@ const suppliedUnits = [
   'Nagatina Monks','Azaps','Landsknechts','Huskarls','Yellow Turbans','Javelin Sergeants','Imperial Javelins','Tiger Fists','Banner Guards','Axe Raiders','Greyhair Garrison'
 ];
 
+const suppliedArtillery = [
+  'Ballista','Grapeshot','Cannon','Scorpio','Great Bombard','Thunderstar','Hwacha Arrow Launcher','War Rockets','Flaming Comet','Divine Crow','Mortar','Culverin','Catapult','Trebuchet','Siege Ballista','Battering Ram','Siege Tower'
+];
+
 const unitMeta = {};
 function labelUnits(names, tier, tag) { names.forEach(name => unitMeta[name] = { tier, tag }); }
 labelUnits(['Black Dragon Javelineers','Mace Sergeants','Wuxing Pikemen','Doppelsoldner','Ironcap Spearmen','Halberdiers','Dimachaeri','Sons of Fenrir','Prefecture Pikemen','Bagpipes','Condottieri Guard','Prefecture Guard','Squires','Silla Guard','Ronin','Jangjus','Alchemists','Cudgel Monks','Black Dragon Pikemen','Black Dragon Spearmen','Nagatina Monks','Landsknechts','Yellow Turbans'], 3, 'infantry');
@@ -36,6 +40,7 @@ const state = JSON.parse(localStorage.getItem('underdogs-builder') || '{}');
 state.groups ??= 3; state.players ??= 5;
 state.data ??= { players: ['Player One', 'Player Two'], units: ['Imperial Spearmen', 'Iron Reapers', 'Silahdars'], artillery: ['Cannon', 'Grapeshot Cannon'] };
 state.data.units = [...new Set([...state.data.units, ...suppliedUnits])];
+state.data.artillery = [...new Set([...state.data.artillery, ...suppliedArtillery])];
 state.plans ??= {};
 state.stats ??= {};
 state.fiefs ??= {

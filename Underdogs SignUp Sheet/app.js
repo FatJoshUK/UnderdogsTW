@@ -278,13 +278,15 @@ function renderFiefDetails() {
 }
 
 function renderLists() {
-  state.data.artillery = [...new Set([...(state.data.artillery || []), ...suppliedArtillery])];
-  ['players','units','artillery'].forEach(type => { 
-    const list = $(`#${type}List`); 
+  const artillery = [...new Set([...suppliedArtillery, ...(state.data.artillery || [])])];
+  state.data.artillery = artillery;
+  ['players','units','artillery'].forEach(type => {
+    const list = $(`#${type}List`);
     if (list) {
-      list.innerHTML = state.data[type].map((item, index) => `<li>${escapeHtml(item)}<button class="remove" data-type="${type}" data-index="${index}" aria-label="Remove ${escapeHtml(item)}">×</button></li>`).join('') || '<li>No entries yet.</li>'; 
+      const entries = type === 'artillery' ? artillery : state.data[type];
+      list.innerHTML = entries.map((item, index) => `<li>${escapeHtml(item)}<button class="remove" data-type="${type}" data-index="${index}" aria-label="Remove ${escapeHtml(item)}">×</button></li>`).join('') || '<li>No entries yet.</li>';
     }
-  }); 
+  });
 }
 
 function renderStats() {

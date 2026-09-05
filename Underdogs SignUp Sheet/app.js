@@ -54,6 +54,7 @@ if (shared) {
 }
 state.stats ??= {};
 state.battleHistory ??= [];
+state.lastBattleDate ??= '';
 
 let leaderboardSearch = '';
 let leaderboardSort = { key: 'rate', direction: 'desc' };
@@ -292,8 +293,18 @@ function renderBattleLog() {
   if ($('#totalWins')) $('#totalWins').textContent = wins;
   if ($('#totalLosses')) $('#totalLosses').textContent = losses;
   if ($('#battleLogEmpty')) $('#battleLogEmpty').classList.toggle('hidden', records.length > 0);
-  if ($('#battleLogWrap')) $('#battleLogWrap').classList.toggle('hidden', records.length === 0);
-  if ($('#battleLogBody')) $('#battleLogBody').innerHTML = records.slice().reverse().map(record => `<tr><td>${escapeHtml(record.date)}</td><td>${record.roster.length} / ${state.data.players.length} assigned</td><td><select class="outcome-select ${record.outcome}" data-record-id="${record.id}" aria-label="Battle outcome"><option value="win" ${record.outcome === 'win' ? 'selected' : ''}>Win</option><option value="loss" ${record.outcome === 'loss' ? 'selected' : ''}>Loss</option></select></td><td><button class="remove history-remove" data-record-id="${record.id}" aria-label="Delete battle record">×</button></td></tr>`).join('');
+  const list = $('#battleHistoryList');
+  if (!list) return;
+  list.innerHTML = records.slice().reverse().map(record => {
+    const outcome = record.outcome === 'loss' ? 'loss' : 'win';
+    const rosterCount = record.roster?.length ?? 0;
+    return `<article class="battle-report ${outcome}">
+      <div class="report-top"><div><span class="report-date">${escapeHtml(record.date || 'Undated')}</span><h4>${escapeHtml(record.opponent || 'Territory War')}</h4></div><select class="outcome-select ${outcome}" data-record-id="${record.id}" aria-label="Battle outcome"><option value="win" ${outcome === 'win' ? 'selected' : ''}>Victory</option><option value="loss" ${outcome === 'loss' ? 'selected' : ''}>Defeat</option></select></div>
+      <div class="report-meta"><span>${escapeHtml(record.role || 'Attacking')}</span><span>${escapeHtml(record.fiefType || 'Village')}</span><span>${escapeHtml(record.endStatus || 'Recorded')}</span><span>${rosterCount} assigned</span></div>
+      ${record.notes ? `<p>${escapeHtml(record.notes)}</p>` : ''}
+      <button class="remove history-remove" data-record-id="${record.id}" aria-label="Delete battle record">Delete report</button>
+    </article>`;
+  }).join('');
 }
 
 function renderLeaderboard() {
@@ -344,6 +355,36 @@ document.querySelectorAll('.stats-tab').forEach(tab => tab.onclick = () => {
   const target = $(`#${tab.dataset.statsTab}`);
   if (target) { target.classList.add('active'); target.hidden = false; }
 });
+
+const battleEntryForm = $('#battleEntryForm');
+const today = () => new Date().toISOString().slice(0, 10);
+if ($('#battleDate')) $('#battleDate').value = state.lastBattleDate || today();
+document.querySelectorAll('[data-toggle]').forEach(button => button.onclick = () => {
+  const toggle = button.dataset.toggle;
+  document.querySelectorAll(`[data-toggle="${toggle}"]`).forEach(option => option.classList.remove('active'));
+  button.classList.add('active');
+  const input = toggle === 'role' ? $('#battleRole') : $('#battleOutcome');
+  if (input) input.value = button.dataset.value;
+});
+if (battleEntryForm) battleEntryForm.onsubmit = e => {
+  e.preventDefault();
+  const date = $('#battleDate').value || today();
+  const record = {
+    id: Date.now(), date, role: $('#battleRole').value, opponent: $('#opponentHouse').value.trim() || 'Territory War',
+    fiefType: $('#fiefType').value, outcome: $('#battleOutcome').value, endStatus: $('#endStatus').value,
+    notes: $('#battleNotes').value.trim(), roster: currentRoster()
+  };
+  state.battleHistory.push(record);
+  if ($('#rememberBattleDate').checked) state.lastBattleDate = date;
+  else state.lastBattleDate = '';
+  save();
+  renderStats();
+  battleEntryForm.reset();
+  $('#battleDate').value = state.lastBattleDate || today();
+  $('#battleRole').value = 'attacking';
+  $('#battleOutcome').value = 'win';
+  document.querySelectorAll('[data-toggle="role"],[data-toggle="outcome"]').forEach(option => option.classList.toggle('active', option.dataset.value === (option.dataset.toggle === 'role' ? 'attacking' : 'win')));
+};
 
 const leaderboardSearchInput = $('#leaderboardSearch');
 if (leaderboardSearchInput) leaderboardSearchInput.oninput = e => { leaderboardSearch = e.target.value; renderLeaderboard(); };
@@ -514,7 +555,7 @@ if (confirmWarBtn) {
       if (roster.includes(name)) stat.attended++; 
       else stat.missed++; 
     });
-    state.battleHistory.push({ id: Date.now(), date: new Date().toLocaleDateString(), roster, outcome: 'win' });
+    state.battleHistory.push({ id: Date.now(), date: new Date().toISOString().slice(0, 10), roster, outcome: 'win', role: 'attacking', opponent: 'Territory War', fiefType: 'Village', endStatus: 'Recorded', notes: '' });
     save();
     renderStats();
     const details = $('#confirmDetails');

@@ -75,9 +75,27 @@
           <button class="stats-tab" data-stats-tab="attendance-leaderboard" role="tab" aria-selected="false">Attendance Leaderboard</button>
         </div>
         <section id="battle-log" class="stats-section active" role="tabpanel">
-          <div class="history-summary"><div><span class="summary-label">BATTLE HISTORY</span><h3>Campaign results</h3></div><div class="record-summary"><span class="wins"><b id="totalWins">0</b> Wins</span><span class="losses"><b id="totalLosses">0</b> Losses</span></div></div>
-          <div id="battleLogEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
-          <div id="battleLogWrap" class="stats-table-wrap hidden"><table><thead><tr><th>Date</th><th>Roster</th><th>Outcome</th><th>Actions</th></tr></thead><tbody id="battleLogBody"></tbody></table></div>
+          <div class="battle-dashboard">
+            <section class="quick-entry-card">
+              <div class="card-heading"><span class="summary-label">QUICK ENTRY</span><h3>Record TW Battle</h3></div>
+              <form id="battleEntryForm" class="battle-entry-form">
+                <label>Date<input id="battleDate" type="date" required /></label>
+                <label class="remember-date"><span><input id="rememberBattleDate" type="checkbox" /> Remember date</span></label>
+                <fieldset><legend>Role</legend><div class="toggle-group"><button type="button" class="toggle-option active" data-toggle="role" data-value="attacking">Attacking</button><button type="button" class="toggle-option" data-toggle="role" data-value="defending">Defending</button></div><input id="battleRole" type="hidden" value="attacking" /></fieldset>
+                <label>Opponent House<input id="opponentHouse" type="text" placeholder="Enter opponent house" /></label>
+                <label>Fief Type<select id="fiefType"><option value="Village">Village</option><option value="City">City</option><option value="Fort">Fort</option></select></label>
+                <fieldset><legend>Outcome</legend><div class="toggle-group"><button type="button" class="toggle-option active" data-toggle="outcome" data-value="win">Victory</button><button type="button" class="toggle-option" data-toggle="outcome" data-value="loss">Defeat</button></div><input id="battleOutcome" type="hidden" value="win" /></fieldset>
+                <label>End Location / Status<select id="endStatus"><option value="Secured">Secured</option><option value="Contested">Contested</option><option value="Lost">Lost</option><option value="Pending">Pending</option></select></label>
+                <label class="notes-field">Battle Notes<textarea id="battleNotes" rows="4" placeholder="Briefly describe the engagement..."></textarea></label>
+                <button class="primary save-battle-button" type="submit">Save battle record <span>→</span></button>
+              </form>
+            </section>
+            <section class="field-reports-card">
+              <div class="history-summary"><div><span class="summary-label">FIELD REPORTS</span><h3>Battle History</h3></div><div class="record-summary"><span class="wins"><b id="totalWins">0</b> Wins</span><span class="losses"><b id="totalLosses">0</b> Losses</span></div></div>
+              <div id="battleLogEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
+              <div id="battleHistoryList" class="battle-history-list"></div>
+            </section>
+          </div>
         </section>
         <section id="attendance-leaderboard" class="stats-section" role="tabpanel" hidden>
           <div class="leaderboard-head"><div><span class="summary-label">ROSTER VAULT</span><h3>Attendance leaderboard</h3></div><input id="leaderboardSearch" type="search" placeholder="Search player name..." aria-label="Search player name" /></div>

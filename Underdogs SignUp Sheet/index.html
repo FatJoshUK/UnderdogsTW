@@ -69,24 +69,31 @@
 
       <section id="stats" class="panel">
         <div class="battle-log-heading"><div><p class="eyebrow">TERRITORY WAR // BATTLE LOG</p><h2>Battle Log</h2><p>Record every engagement and keep the campaign history at hand.</p></div><span class="battle-log-mark">TW</span></div>
-        <div class="battle-log-layout">
-          <section class="battle-form-card">
-            <div class="battle-card-heading"><div><p class="eyebrow">QUICK ENTRY</p><h3>Record TW Battle</h3></div><span class="battle-card-icon">✦</span></div>
-            <form id="battleForm" class="battle-form">
-              <div class="battle-form-row"><label>Date<input id="battleDate" type="date" required /></label><label class="remember-date"><span>Remember date</span><input id="rememberBattleDate" type="checkbox" /> <small>Use for next entry</small></label></div>
-              <fieldset><legend>Role</legend><div class="segmented-control"><button type="button" class="segment active" data-field="battleRole" data-value="attacking">Attacking</button><button type="button" class="segment" data-field="battleRole" data-value="defending">Defending</button></div><input type="hidden" id="battleRole" value="attacking" /></fieldset>
-              <label>Opponent House<input id="battleOpponent" placeholder="Enter opposing house" required /></label>
-              <label>Fief Type<select id="battleFiefType"><option>Village</option><option>City</option><option>Fort</option></select></label>
-              <fieldset><legend>Outcome</legend><div class="segmented-control"><button type="button" class="segment victory active" data-field="battleOutcome" data-value="victory">Victory</button><button type="button" class="segment defeat" data-field="battleOutcome" data-value="defeat">Defeat</button></div><input type="hidden" id="battleOutcome" value="victory" /></fieldset>
-              <label>End Location / Status<select id="battleEndStatus"><option value="secured">Secured</option><option value="held">Held at position</option><option value="base">Fell back to base</option></select></label>
-              <label>Battle Notes<textarea id="battleNotes" rows="5" placeholder="Briefly describe the engagement..."></textarea></label>
-              <div class="battle-form-actions"><button id="cancelBattleEdit" class="secondary hidden" type="button">Cancel edit</button><button class="primary" type="submit">Save Battle Record <span>→</span></button></div>
-            </form>
-          </section>
-          <section class="battle-history-card">
-            <div class="battle-card-heading"><div><p class="eyebrow">FIELD REPORTS</p><h3>Battle History</h3></div><span id="battleCount" class="battle-count">0 records</span></div>
-            <div id="battleHistory" class="battle-history"></div>
-          </section>
+        <div class="stats-subtabs" role="tablist" aria-label="Stats views"><button class="stats-subtab active" data-stats-view="battleLogView">Battle Log</button><button class="stats-subtab" data-stats-view="attendanceLeaderboardView">Attendance Leaderboard</button></div>
+        <div id="battleLogView" class="stats-subview active">
+          <div class="battle-log-layout">
+            <section class="battle-form-card">
+              <div class="battle-card-heading"><div><p class="eyebrow">QUICK ENTRY</p><h3>Record TW Battle</h3></div><span class="battle-card-icon">✦</span></div>
+              <form id="battleForm" class="battle-form">
+                <div class="battle-form-row"><label>Date<input id="battleDate" type="date" required /></label><label class="remember-date"><span>Remember date</span><input id="rememberBattleDate" type="checkbox" /> <small>Use for next entry</small></label></div>
+                <fieldset><legend>Role</legend><div class="segmented-control"><button type="button" class="segment active" data-field="battleRole" data-value="attacking">Attacking</button><button type="button" class="segment" data-field="battleRole" data-value="defending">Defending</button></div><input type="hidden" id="battleRole" value="attacking" /></fieldset>
+                <label>Opponent House<input id="battleOpponent" placeholder="Enter opposing house" required /></label>
+                <label>Fief Type<select id="battleFiefType"><option>Village</option><option>City</option><option>Fort</option></select></label>
+                <fieldset><legend>Outcome</legend><div class="segmented-control"><button type="button" class="segment victory active" data-field="battleOutcome" data-value="victory">Victory</button><button type="button" class="segment defeat" data-field="battleOutcome" data-value="defeat">Defeat</button></div><input type="hidden" id="battleOutcome" value="victory" /></fieldset>
+                <label>End Location / Status<select id="battleEndStatus"><option value="secured">Secured</option><option value="held">Held at position</option><option value="base">Fell back to base</option></select></label>
+                <label>Battle Notes<textarea id="battleNotes" rows="5" placeholder="Briefly describe the engagement..."></textarea></label>
+                <div class="battle-form-actions"><button id="cancelBattleEdit" class="secondary hidden" type="button">Cancel edit</button><button class="primary" type="submit">Save Battle Record <span>→</span></button></div>
+              </form>
+            </section>
+            <section class="battle-history-card">
+              <div class="battle-card-heading"><div><p class="eyebrow">FIELD REPORTS</p><h3>Battle History</h3></div><span id="battleCount" class="battle-count">0 records</span></div>
+              <div id="battleHistory" class="battle-history"></div>
+            </section>
+          </div>
+        </div>
+        <div id="attendanceLeaderboardView" class="stats-subview hidden">
+          <div class="leaderboard-heading"><div><p class="eyebrow">HOUSE PARTICIPATION</p><h3>Attendance Leaderboard</h3><p>Participation updates whenever a Team Builder roster is confirmed.</p></div><span id="leaderboardWarCount" class="battle-count">0 wars tracked</span></div>
+          <div class="leaderboard-table-wrap"><table class="leaderboard-table"><thead><tr><th><button class="sort-button" data-sort-key="name">Player Name <span>↕</span></button></th><th><button class="sort-button" data-sort-key="total">Total Wars Tracked <span>↕</span></button></th><th><button class="sort-button" data-sort-key="attended">Attended <span>↕</span></button></th><th><button class="sort-button" data-sort-key="missed">Missed TW <span>↕</span></button></th><th><button class="sort-button" data-sort-key="rate">Attendance Rate <span>↕</span></button></th></tr></thead><tbody id="leaderboardBody"></tbody></table></div>
         </div>
       </section>
 

@@ -304,6 +304,27 @@ function renderBattleLog() {
   }).join('') : '<div class="battle-empty"><span>✦</span><strong>No battle records yet</strong><p>Use the quick-entry form to log your first Territory War engagement.</p></div>';
 }
 
+let leaderboardSort = { key: 'rate', direction: 'desc' };
+
+function renderAttendanceLeaderboard() {
+  const warCount = state.data.players.reduce((max, name) => {
+    const stat = state.stats[name] || { attended: 0, missed: 0 };
+    return Math.max(max, stat.attended + stat.missed);
+  }, 0);
+  if ($('#leaderboardWarCount')) $('#leaderboardWarCount').textContent = `${warCount} ${warCount === 1 ? 'war' : 'wars'} tracked`;
+  const rows = state.data.players.map(name => {
+    const stat = state.stats[name] || { attended: 0, missed: 0 };
+    const total = stat.attended + stat.missed;
+    return { name, total, attended: stat.attended, missed: stat.missed, rate: total ? Math.round((stat.attended / total) * 100) : 0 };
+  });
+  rows.sort((a, b) => {
+    const comparison = leaderboardSort.key === 'name' ? a.name.localeCompare(b.name) : a[leaderboardSort.key] - b[leaderboardSort.key];
+    return leaderboardSort.direction === 'asc' ? comparison : -comparison;
+  });
+  const body = $('#leaderboardBody');
+  if (body) body.innerHTML = rows.length ? rows.map(row => `<tr><td class="leaderboard-player"><span class="player-avatar">${escapeHtml(row.name.slice(0, 1).toUpperCase())}</span><strong>${escapeHtml(row.name)}</strong></td><td>${row.total}</td><td><span class="score-pill attended">${row.attended}</span></td><td><span class="score-pill missed">${row.missed}</span></td><td><div class="rate-cell"><strong>${row.rate}%</strong><span class="rate-track"><i style="width:${row.rate}%"></i></span></div></td></tr>`).join('') : '<tr><td colspan="5" class="leaderboard-empty">Add players in the Roster Vault to start tracking attendance.</td></tr>';
+}
+
 function renderAttendanceEditor() {
   const editor = $('#attendanceEditor');
   if (editor) {
@@ -319,12 +340,27 @@ document.querySelectorAll('.tabs .tab').forEach(tab => tab.onclick = () => {
   tab.classList.add('active'); 
   const targetPanel = $(`#${tab.dataset.tab}`);
   if (targetPanel) targetPanel.classList.add('active'); 
-  if (tab.dataset.tab === 'stats') renderBattleLog();
+  if (tab.dataset.tab === 'stats') { renderBattleLog(); renderAttendanceLeaderboard(); }
   if (tab.dataset.tab === 'vault') renderLists();
   if (tab.dataset.tab === 'warplan') {
     renderCampaignMap();
     renderFiefDetails();
   }
+});
+
+document.querySelectorAll('.stats-subtab').forEach(tab => tab.onclick = () => {
+  document.querySelectorAll('.stats-subtab,.stats-subview').forEach(element => element.classList.remove('active'));
+  document.querySelectorAll('.stats-subview').forEach(element => element.classList.add('hidden'));
+  tab.classList.add('active');
+  const view = $(`#${tab.dataset.statsView}`);
+  if (view) { view.classList.remove('hidden'); view.classList.add('active'); }
+  if (tab.dataset.statsView === 'attendanceLeaderboardView') renderAttendanceLeaderboard();
+});
+
+document.querySelectorAll('.sort-button').forEach(button => button.onclick = () => {
+  const key = button.dataset.sortKey;
+  leaderboardSort = leaderboardSort.key === key ? { key, direction: leaderboardSort.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: key === 'name' ? 'asc' : 'desc' };
+  renderAttendanceLeaderboard();
 });
 
 document.querySelectorAll('.admin-tab').forEach(tab => tab.onclick = () => { 
@@ -435,9 +471,10 @@ document.querySelectorAll('.data-card form').forEach(form => form.onsubmit = e =
     state.data[type].push(value); 
     form.reset(); 
     save(); 
-    renderLists(); 
-    renderBuilder(); 
-    renderBattleLog(); 
+    renderLists();
+    renderBuilder();
+    renderBattleLog();
+    renderAttendanceLeaderboard();
   } 
 });
 
@@ -445,9 +482,10 @@ document.addEventListener('click', e => {
   if (!e.target.matches('.remove')) return; 
   state.data[e.target.dataset.type].splice(+e.target.dataset.index, 1); 
   save(); 
-  renderLists(); 
-  renderBuilder(); 
-  renderBattleLog(); 
+  renderLists();
+  renderBuilder();
+  renderBattleLog();
+  renderAttendanceLeaderboard();
 });
 
 const saveAttBtn = $('#saveAttendance');
@@ -457,9 +495,10 @@ if (saveAttBtn) {
       const stat = state.stats[input.dataset.player] ??= { attended: 0, missed: 0 }; 
       stat[input.dataset.stat] = Math.max(0, Number(input.value) || 0); 
     }); 
-    save(); 
-    renderBattleLog(); 
-    renderAttendanceEditor(); 
+    save();
+    renderBattleLog();
+    renderAttendanceLeaderboard();
+    renderAttendanceEditor();
     saveAttBtn.textContent = 'Attendance saved'; 
     setTimeout(() => saveAttBtn.innerHTML = 'Save attendance changes <span>→</span>', 1600); 
   };
@@ -524,8 +563,9 @@ if (confirmWarBtn) {
       if (roster.includes(name)) stat.attended++; 
       else stat.missed++; 
     });
-    save(); 
-    renderBattleLog(); 
+    save();
+    renderBattleLog();
+    renderAttendanceLeaderboard();
     const details = $('#confirmDetails');
     if (details) details.textContent = `${roster.length} attended · ${Math.max(0, state.data.players.length - roster.length)} did not attend`;
     const res = $('#confirmResult');
@@ -560,6 +600,8 @@ if (shareLinkBtn) {
 setupControls();
 renderBuilder();
 renderLists();
+renderBattleLog();
+renderAttendanceLeaderboard();
 renderCampaignMap();
 renderFiefDetails();
 

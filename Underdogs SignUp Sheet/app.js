@@ -39,12 +39,6 @@ state.data.units = [...new Set([...state.data.units, ...suppliedUnits])];
 state.plans ??= {};
 state.stats ??= {};
 state.battleHistory ??= [];
-state.fiefs ??= {
-  fief1: { name: 'Anഭt', type: 'Village', status: 'owned', notes: 'Primary resource node.' },
-  fief2: { name: 'Reginopolis', type: 'City', status: 'enemy', notes: 'Heavy fortification.' },
-  fief3: { name: 'Turm', type: 'Fief', status: 'target', notes: 'Next target for acquisition.' }
-};
-state.selectedFiefId ??= 'fief1';
 
 const save = () => { if (!shared) localStorage.setItem('underdogs-builder', JSON.stringify(state)); };
 const $ = s => document.querySelector(s);
@@ -198,85 +192,6 @@ function renderBuilder() {
   save();
 }
 
-function renderCampaignMap() {
-  const mapContainer = $('#campaignMap');
-  if (!mapContainer) return;
-  mapContainer.innerHTML = '';
-
-  Object.entries(state.fiefs || {}).forEach(([id, fief]) => {
-    const node = document.createElement('div');
-    node.className = `fief-node ${fief.status || 'owned'}`;
-    if (state.selectedFiefId === id) {
-      node.style.outline = '2px solid var(--accent)';
-    }
-    node.innerHTML = `
-      <span class="fief-type">${escapeHtml(fief.type || 'Fief')}</span>
-      <div class="fief-name">${escapeHtml(fief.name || 'Unnamed')}</div>
-    `;
-    node.onclick = () => {
-      state.selectedFiefId = id;
-      save();
-      renderCampaignMap();
-      renderFiefDetails();
-    };
-    mapContainer.append(node);
-  });
-}
-
-function renderFiefDetails() {
-  const detailsContainer = $('#fiefDetailsCard');
-  if (!detailsContainer) return;
-  const fief = state.fiefs?.[state.selectedFiefId];
-  if (!fief) {
-    detailsContainer.innerHTML = '<p>Select a fief on the map to view details.</p>';
-    return;
-  }
-
-  detailsContainer.innerHTML = `
-    <h3>Fief Details</h3>
-    <label>
-      Fief Name
-      <input type="text" id="fiefNameInput" value="${escapeHtml(fief.name || '')}" />
-    </label>
-    <label>
-      Type
-      <input type="text" id="fiefTypeInput" value="${escapeHtml(fief.type || '')}" />
-    </label>
-    <label>
-      Status
-      <select id="fiefStatusSelect">
-        <option value="owned" ${fief.status === 'owned' ? 'selected' : ''}>Owned</option>
-        <option value="enemy" ${fief.status === 'enemy' ? 'selected' : ''}>Enemy</option>
-        <option value="target" ${fief.status === 'target' ? 'selected' : ''}>Target</option>
-      </select>
-    </label>
-    <label>
-      Notes / Plan
-      <textarea id="fiefNotesInput">${escapeHtml(fief.notes || '')}</textarea>
-    </label>
-  `;
-
-  $('#fiefNameInput').oninput = e => {
-    fief.name = e.target.value;
-    save();
-    renderCampaignMap();
-  };
-  $('#fiefTypeInput').oninput = e => {
-    fief.type = e.target.value;
-    save();
-    renderCampaignMap();
-  };
-  $('#fiefStatusSelect').onchange = e => {
-    fief.status = e.target.value;
-    save();
-    renderCampaignMap();
-  };
-  $('#fiefNotesInput').oninput = e => {
-    fief.notes = e.target.value;
-    save();
-  };
-}
-
 function renderLists() { 
   ['players','units','artillery'].forEach(type => { 
     const list = $(`#${type}List`); 
@@ -400,10 +315,6 @@ document.querySelectorAll('.tabs .tab').forEach(tab => tab.onclick = () => {
   const targetPanel = $(`#${tab.dataset.tab}`);
   if (targetPanel) targetPanel.classList.add('active'); 
   if (tab.dataset.tab === 'stats') renderStats(); 
-  if (tab.dataset.tab === 'warplan') {
-    renderCampaignMap();
-    renderFiefDetails();
-  }
 });
 
 document.querySelectorAll('.admin-tab').forEach(tab => tab.onclick = () => { 
@@ -579,7 +490,7 @@ if (discordExpBtn) {
 const shareLinkBtn = $('#shareLink');
 if (shareLinkBtn) {
   shareLinkBtn.onclick = () => { 
-    const view = { groups: state.groups, players: state.players, units: state.units, data: state.data, plans: state.plans, stats: state.stats, battleHistory: state.battleHistory, fiefs: state.fiefs }; 
+    const view = { groups: state.groups, players: state.players, units: state.units, data: state.data, plans: state.plans, stats: state.stats, battleHistory: state.battleHistory }; 
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(view)))); 
     const url = `${location.href.split('?')[0]}?view=${encoded}`; 
     copyText(url, () => { 
@@ -591,8 +502,6 @@ if (shareLinkBtn) {
 
 setupControls(); 
 renderBuilder(); 
-renderCampaignMap();
-renderFiefDetails();
 
 if (sessionStorage.getItem('underdogs-vault') === 'open') { 
   const loginScr = $('#loginScreen');

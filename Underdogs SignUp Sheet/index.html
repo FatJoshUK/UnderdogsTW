@@ -18,7 +18,6 @@
       </a>
       <nav class="tabs" aria-label="Main navigation">
         <button class="tab active" data-tab="builder">Team Builder</button>
-        <button class="tab" data-tab="warplan">War Plan</button>
         <button class="tab" data-tab="vault">Admin Panel <span class="lock-dot">●</span></button>
         <button class="tab" data-tab="stats">Stats</button>
       </nav>
@@ -48,24 +47,6 @@
         <div id="groups" class="groups"></div>
         <section class="confirm-bar"><div><p class="eyebrow">WAR ROSTER READY</p><h2>Lock in this Territory War</h2><p>Records attendance for every player in the Roster Vault.</p></div><button id="confirmWar" class="primary confirm-button">Confirm roster <span>→</span></button></section>
         <div id="confirmResult" class="confirm-result hidden"><b>Territory War recorded.</b><span id="confirmDetails"></span><div><button id="discordExport" class="secondary">Copy for Discord</button><button id="shareLink" class="secondary">Copy read-only link</button></div></div>
-      </section>
-
-      <!-- NEW WAR PLAN PANEL -->
-      <section id="warplan" class="panel">
-        <div class="stats-heading">
-          <p class="eyebrow">TERRITORY CONTROL // CAMPAIGN MAP</p>
-          <h2>Strategic War Plan</h2>
-          <p>Click any fief to toggle its status and set attack details.</p>
-        </div>
-        <div class="warplan-container">
-          <div class="campaign-map" id="campaignMap">
-            <!-- Fief nodes will load here -->
-          </div>
-          <div class="fief-details-card" id="fiefDetailsPanel">
-            <h3>Select a Fief</h3>
-            <p>Click a node on the map to configure attack vectors and meet points.</p>
-          </div>
-        </div>
       </section>
 
       <section id="stats" class="panel">

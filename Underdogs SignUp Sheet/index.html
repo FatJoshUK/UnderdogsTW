@@ -49,53 +49,40 @@
         <div id="confirmResult" class="confirm-result hidden"><b>Territory War recorded.</b><span id="confirmDetails"></span><div><button id="discordExport" class="secondary">Copy for Discord</button><button id="shareLink" class="secondary">Copy read-only link</button></div></div>
       </section>
 
-      <!-- NEW WAR PLAN PANEL -->
-      <section id="warplan" class="panel">
-        <div class="stats-heading">
-          <p class="eyebrow">TERRITORY CONTROL // CAMPAIGN MAP</p>
-          <h2>Strategic War Plan</h2>
-          <p>Click any fief to toggle its status and set attack details.</p>
-        </div>
-        <div class="warplan-container">
-          <div class="campaign-map" id="campaignMap">
-            <!-- Fief nodes will load here -->
-          </div>
-          <div class="fief-details-card" id="fiefDetailsPanel">
-            <h3>Select a Fief</h3>
-            <p>Click a node on the map to configure attack vectors and meet points.</p>
-          </div>
-        </div>
-      </section>
-
       <section id="stats" class="panel">
-        <div class="battle-log-heading"><div><p class="eyebrow">TERRITORY WAR // BATTLE LOG</p><h2>Battle Log</h2><p>Record every engagement and keep the campaign history at hand.</p></div><span class="battle-log-mark">TW</span></div>
-        <div class="stats-subtabs" role="tablist" aria-label="Stats views"><button class="stats-subtab active" data-stats-view="battleLogView">Battle Log</button><button class="stats-subtab" data-stats-view="attendanceLeaderboardView">Attendance Leaderboard</button></div>
-        <div id="battleLogView" class="stats-subview active">
-          <div class="battle-log-layout">
-            <section class="battle-form-card">
-              <div class="battle-card-heading"><div><p class="eyebrow">QUICK ENTRY</p><h3>Record TW Battle</h3></div><span class="battle-card-icon">✦</span></div>
-              <form id="battleForm" class="battle-form">
-                <div class="battle-form-row"><label>Date<input id="battleDate" type="date" required /></label><label class="remember-date"><span>Remember date</span><input id="rememberBattleDate" type="checkbox" /> <small>Use for next entry</small></label></div>
-                <fieldset><legend>Role</legend><div class="segmented-control"><button type="button" class="segment active" data-field="battleRole" data-value="attacking">Attacking</button><button type="button" class="segment" data-field="battleRole" data-value="defending">Defending</button></div><input type="hidden" id="battleRole" value="attacking" /></fieldset>
-                <label>Opponent House<input id="battleOpponent" placeholder="Enter opposing house" required /></label>
-                <label>Fief Type<select id="battleFiefType"><option>Village</option><option>City</option><option>Fort</option></select></label>
-                <fieldset><legend>Outcome</legend><div class="segmented-control"><button type="button" class="segment victory active" data-field="battleOutcome" data-value="victory">Victory</button><button type="button" class="segment defeat" data-field="battleOutcome" data-value="defeat">Defeat</button></div><input type="hidden" id="battleOutcome" value="victory" /></fieldset>
-                <label>End Location / Status<select id="battleEndStatus"><option value="secured">Secured</option><option value="held">Held at position</option><option value="base">Fell back to base</option></select></label>
-                <label>Battle Notes<textarea id="battleNotes" rows="5" placeholder="Briefly describe the engagement..."></textarea></label>
-                <div class="battle-form-actions"><button id="cancelBattleEdit" class="secondary hidden" type="button">Cancel edit</button><button class="primary" type="submit">Save Battle Record <span>→</span></button></div>
+        <div class="stats-heading"><p class="eyebrow">TERRITORY WAR RECORD</p><h2>House Stats</h2><p>Attendance is recorded each time a roster is confirmed.</p></div>
+        <div class="stats-tabs" role="tablist" aria-label="Stats views">
+          <button class="stats-tab active" data-stats-tab="battle-log" role="tab" aria-selected="true">Battle Log</button>
+          <button class="stats-tab" data-stats-tab="attendance-leaderboard" role="tab" aria-selected="false">Attendance Leaderboard</button>
+        </div>
+        <section id="battle-log" class="stats-section active" role="tabpanel">
+          <div class="battle-dashboard">
+            <section class="quick-entry-card">
+              <div class="card-heading"><span class="summary-label">QUICK ENTRY</span><h3>Record TW Battle</h3></div>
+              <form id="battleEntryForm" class="battle-entry-form">
+                <label>Date<input id="battleDate" type="date" required /></label>
+                <label class="remember-date"><span><input id="rememberBattleDate" type="checkbox" /> Remember date</span></label>
+                <fieldset><legend>Role</legend><div class="toggle-group"><button type="button" class="toggle-option active" data-toggle="role" data-value="attacking">Attacking</button><button type="button" class="toggle-option" data-toggle="role" data-value="defending">Defending</button></div><input id="battleRole" type="hidden" value="attacking" /></fieldset>
+                <label>Opponent House<input id="opponentHouse" type="text" placeholder="Enter opponent house" /></label>
+                <label>Fief Type<select id="fiefType"><option value="Village">Village</option><option value="City">City</option><option value="Fort">Fort</option></select></label>
+                <fieldset><legend>Outcome</legend><div class="toggle-group"><button type="button" class="toggle-option active" data-toggle="outcome" data-value="win">Victory</button><button type="button" class="toggle-option" data-toggle="outcome" data-value="loss">Defeat</button></div><input id="battleOutcome" type="hidden" value="win" /></fieldset>
+                <label>End Location / Status<select id="endStatus"><option value="Secured">Secured</option><option value="Contested">Contested</option><option value="Lost">Lost</option><option value="Pending">Pending</option></select></label>
+                <label class="notes-field">Battle Notes<textarea id="battleNotes" rows="4" placeholder="Briefly describe the engagement..."></textarea></label>
+                <button class="primary save-battle-button" type="submit">Save battle record <span>→</span></button>
               </form>
             </section>
-            <section class="battle-history-card">
-              <div class="battle-card-heading"><div><p class="eyebrow">FIELD REPORTS</p><h3>Battle History</h3></div><span id="battleCount" class="battle-count">0 records</span></div>
-              <div id="battleHistory" class="battle-history"></div>
+            <section class="field-reports-card">
+              <div class="history-summary"><div><span class="summary-label">FIELD REPORTS</span><h3>Battle History</h3></div><div class="record-summary"><span class="wins"><b id="totalWins">0</b> Wins</span><span class="losses"><b id="totalLosses">0</b> Losses</span></div></div>
+              <div id="battleLogEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
+              <div id="battleHistoryList" class="battle-history-list"></div>
             </section>
           </div>
-        </div>
-        <div id="attendanceLeaderboardView" class="stats-subview hidden">
-          <div class="leaderboard-heading"><div><p class="eyebrow">HOUSE PARTICIPATION</p><h3>Attendance Leaderboard</h3><p>Participation updates whenever a Team Builder roster is confirmed.</p></div><span id="leaderboardWarCount" class="battle-count">0 wars tracked</span></div>
-          <div class="leaderboard-toolbar"><label class="leaderboard-search">Search players<input id="leaderboardSearch" type="search" placeholder="Search player name..." autocomplete="off" /></label></div>
-          <div class="leaderboard-table-wrap"><table class="leaderboard-table"><thead><tr><th><button class="sort-button" data-sort-key="name">Player Name <span>↕</span></button></th><th><button class="sort-button" data-sort-key="total">Total Wars Tracked <span>↕</span></button></th><th><button class="sort-button" data-sort-key="attended">Attended <span>↕</span></button></th><th><button class="sort-button" data-sort-key="missed">Missed TW <span>↕</span></button></th><th><button class="sort-button" data-sort-key="rate">Attendance Rate <span>↕</span></button></th></tr></thead><tbody id="leaderboardBody"></tbody></table></div>
-        </div>
+        </section>
+        <section id="attendance-leaderboard" class="stats-section" role="tabpanel" hidden>
+          <div class="leaderboard-head"><div><span class="summary-label">ROSTER VAULT</span><h3>Attendance leaderboard</h3></div><input id="leaderboardSearch" type="search" placeholder="Search player name..." aria-label="Search player name" /></div>
+          <div id="leaderboardEmpty" class="stats-empty">Add players in the Roster Vault to start tracking attendance.</div>
+          <div id="leaderboardWrap" class="stats-table-wrap hidden"><table><thead><tr><th><button class="sort-button" data-sort-key="name">Player Name <span>↕</span></button></th><th><button class="sort-button" data-sort-key="total">Total Wars Tracked <span>↕</span></button></th><th><button class="sort-button" data-sort-key="attended">Attended Count <span>↕</span></button></th><th><button class="sort-button" data-sort-key="missed">Missed TW Count <span>↕</span></button></th><th><button class="sort-button" data-sort-key="rate">Attendance Rate <span>↕</span></button></th></tr></thead><tbody id="leaderboardBody"></tbody></table></div>
+        </section>
       </section>
 
       <section id="vault" class="panel">
@@ -137,6 +124,6 @@
     <template id="playerTemplate">
       <div class="player-card"><div class="player-top"><span class="player-index"></span><input class="player-select" aria-label="Select player" /></div><div class="loadout"><div class="unit-slots"></div><div class="artillery-slot"><span>ARTILLERY</span><input class="artillery-select" aria-label="Select artillery" /></div></div></div>
     </template>
-    <script src="app.js?v=artillery-db"></script>
+    <script src="app.js"></script>
   </body>
 </html>

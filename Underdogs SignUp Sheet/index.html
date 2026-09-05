@@ -68,21 +68,9 @@
       </section>
 
       <section id="stats" class="panel">
-        <div class="stats-heading"><p class="eyebrow">TERRITORY WAR RECORD</p><h2>House Stats</h2><p>Track attendance and the territory won or lost across every campaign.</p></div>
-        <div class="stats-tabs" role="tablist" aria-label="Stats views"><button class="stats-tab active" data-stats-view="attendanceStatsView">Attendance</button><button class="stats-tab" data-stats-view="territoryStatsView">Territory War History</button></div>
-        <div id="attendanceStatsView" class="stats-view active">
-          <div id="statsEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
-          <div id="statsTableWrap" class="stats-table-wrap hidden"><table><thead><tr><th>House member</th><th>Attended</th><th>Did not attend</th><th>Attendance rate</th></tr></thead><tbody id="statsBody"></tbody></table></div>
-        </div>
-        <div id="territoryStatsView" class="stats-view hidden">
-          <div class="territory-toolbar"><div><p class="eyebrow">CAMPAIGN LEDGER</p><h3>Territory War History</h3><p>Record the result of each war and keep a running fief total.</p></div><button id="showWarForm" class="primary">Add Territory War <span>+</span></button></div>
-          <div class="territory-dashboard" id="territoryDashboard"></div>
-          <div class="territory-grid">
-            <section class="data-card territory-card"><div class="card-title"><span class="icon">◈</span><div><h3>Starting territory</h3><p>Set the baseline used for your running total.</p></div></div><form id="territoryBaselineForm" class="territory-form compact-form"><label>Villages<input id="baselineVillage" type="number" min="0" value="0" /></label><label>Cities<input id="baselineCity" type="number" min="0" value="0" /></label><label>Forts<input id="baselineFort" type="number" min="0" value="0" /></label><button class="secondary" type="submit">Save baseline</button></form></section>
-            <section id="warFormCard" class="data-card territory-card hidden"><div class="card-title"><span class="icon">✦</span><div><h3>Record a Territory War</h3><p>Add the fiefs gained and lost by type.</p></div></div><form id="territoryWarForm" class="territory-form"><label>Date<input id="warDate" type="date" required /></label><label>Outcome<select id="warOutcome"><option value="victory">Victory</option><option value="draw">Draw</option><option value="defeat">Defeat</option></select></label><label>Opponent<input id="warOpponent" placeholder="Optional" /></label><div class="territory-form-section"><b>Fiefs gained</b><div class="territory-counts"><label>Village<input id="gainedVillage" type="number" min="0" value="0" /></label><label>City<input id="gainedCity" type="number" min="0" value="0" /></label><label>Fort<input id="gainedFort" type="number" min="0" value="0" /></label></div></div><div class="territory-form-section"><b>Fiefs lost</b><div class="territory-counts"><label>Village<input id="lostVillage" type="number" min="0" value="0" /></label><label>City<input id="lostCity" type="number" min="0" value="0" /></label><label>Fort<input id="lostFort" type="number" min="0" value="0" /></label></div></div><label>Notes<textarea id="warNotes" rows="3" placeholder="Optional campaign notes"></textarea></label><div class="form-actions"><button class="secondary" id="cancelWarForm" type="button">Cancel</button><button class="primary" type="submit">Save war record <span>→</span></button></div></form></section>
-          </div>
-          <section class="history-section"><div class="section-heading"><div><p class="eyebrow">CAMPAIGN LOG</p><h3>Recorded wars</h3></div><span id="warCount" class="muted-label"></span></div><div id="warHistory" class="war-history"></div></section>
-        </div>
+        <div class="stats-heading"><p class="eyebrow">TERRITORY WAR RECORD</p><h2>House Stats</h2><p>Attendance is recorded each time a roster is confirmed.</p></div>
+        <div id="statsEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
+        <div id="statsTableWrap" class="stats-table-wrap hidden"><table><thead><tr><th>House member</th><th>Attended</th><th>Did not attend</th><th>Attendance rate</th></tr></thead><tbody id="statsBody"></tbody></table></div>
       </section>
 
       <section id="vault" class="panel">

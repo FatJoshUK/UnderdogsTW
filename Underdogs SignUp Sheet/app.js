@@ -50,9 +50,6 @@ state.fiefs ??= {
   fief3: { name: 'Turm', type: 'Fief', status: 'target', notes: 'Next target for acquisition.' }
 };
 state.selectedFiefId ??= 'fief1';
-state.territory ??= { baseline: { Village: 0, City: 0, Fort: 0 }, wars: [] };
-state.territory.baseline ??= { Village: 0, City: 0, Fort: 0 };
-state.territory.wars ??= [];
 
 const save = () => { if (!shared) localStorage.setItem('underdogs-builder', JSON.stringify(state)); };
 const $ = s => document.querySelector(s);
@@ -306,47 +303,6 @@ function renderStats() {
   }
 }
 
-function territoryTotals() {
-  const categories = ['Village', 'City', 'Fort'];
-  const current = { ...state.territory.baseline };
-  state.territory.wars.forEach(war => categories.forEach(type => {
-    current[type] += (war.gained?.[type] || 0) - (war.lost?.[type] || 0);
-  }));
-  return { current, total: categories.reduce((sum, type) => sum + current[type], 0) };
-}
-
-function renderTerritoryStats() {
-  const totals = territoryTotals();
-  const gained = state.territory.wars.reduce((sum, war) => sum + Object.values(war.gained || {}).reduce((inner, value) => inner + value, 0), 0);
-  const lost = state.territory.wars.reduce((sum, war) => sum + Object.values(war.lost || {}).reduce((inner, value) => inner + value, 0), 0);
-  const wins = state.territory.wars.filter(war => war.outcome === 'victory').length;
-  const dashboard = $('#territoryDashboard');
-  if (dashboard) dashboard.innerHTML = `<div class="territory-metric"><strong>${totals.total}</strong><span>Current fiefs</span></div><div class="territory-metric"><strong>${totals.current.Village}</strong><span>Villages</span></div><div class="territory-metric"><strong>${totals.current.City}</strong><span>Cities</span></div><div class="territory-metric"><strong>${totals.current.Fort}</strong><span>Forts</span></div><div class="territory-metric ${gained - lost >= 0 ? 'positive' : 'negative'}"><strong>${gained - lost >= 0 ? '+' : ''}${gained - lost}</strong><span>Net territory</span></div><div class="territory-metric positive"><strong>+${gained}</strong><span>Fiefs gained</span></div><div class="territory-metric negative"><strong>-${lost}</strong><span>Fiefs lost</span></div><div class="territory-metric"><strong>${state.territory.wars.length ? Math.round((wins / state.territory.wars.length) * 100) : 0}%</strong><span>Win rate</span></div>`;
-
-  ['Village', 'City', 'Fort'].forEach(type => {
-    const baseline = $(`#baseline${type}`);
-    if (baseline && document.activeElement !== baseline) baseline.value = state.territory.baseline[type];
-  });
-  const count = $('#warCount');
-  if (count) count.textContent = `${state.territory.wars.length} ${state.territory.wars.length === 1 ? 'war' : 'wars'}`;
-  const history = $('#warHistory');
-  if (!history) return;
-  history.innerHTML = state.territory.wars.length ? [...state.territory.wars].reverse().map((war, index) => {
-    const net = Object.values(war.gained || {}).reduce((sum, value) => sum + value, 0) - Object.values(war.lost || {}).reduce((sum, value) => sum + value, 0);
-    const gainedText = ['Village', 'City', 'Fort'].filter(type => war.gained?.[type]).map(type => `${war.gained[type]} ${type}${war.gained[type] > 1 ? 's' : ''}`).join(', ') || 'None';
-    const lostText = ['Village', 'City', 'Fort'].filter(type => war.lost?.[type]).map(type => `${war.lost[type]} ${type}${war.lost[type] > 1 ? 's' : ''}`).join(', ') || 'None';
-    return `<article class="war-entry"><div class="war-entry-head"><div><h4>${escapeHtml(war.outcome || 'War')} ${war.opponent ? `· ${escapeHtml(war.opponent)}` : ''}</h4><small>${escapeHtml(war.date)}</small></div><strong class="${net >= 0 ? 'gain' : 'loss'}">${net >= 0 ? '+' : ''}${net} net</strong></div><div class="war-entry-summary"><span class="gain">Gained: ${escapeHtml(gainedText)}</span><span class="loss">Lost: ${escapeHtml(lostText)}</span></div>${war.notes ? `<p class="war-entry-notes">${escapeHtml(war.notes)}</p>` : ''}</article>`;
-  }).join('') : '<div class="empty-history">No war records yet. Add your first Territory War result above.</div>';
-}
-
-function resetWarForm() {
-  const form = $('#territoryWarForm');
-  if (form) form.reset();
-  const date = $('#warDate');
-  if (date) date.value = new Date().toISOString().slice(0, 10);
-  $('#warFormCard')?.classList.add('hidden');
-}
-
 function renderAttendanceEditor() {
   const editor = $('#attendanceEditor');
   if (editor) {
@@ -377,42 +333,6 @@ document.querySelectorAll('.admin-tab').forEach(tab => tab.onclick = () => {
   if (targetSec) targetSec.classList.add('active'); 
   if (tab.dataset.adminTab === 'attendance') renderAttendanceEditor(); 
 });
-
-document.querySelectorAll('.stats-tab').forEach(tab => tab.onclick = () => {
-  document.querySelectorAll('.stats-tab,.stats-view').forEach(element => element.classList.remove('active'));
-  document.querySelectorAll('.stats-view').forEach(element => element.classList.add('hidden'));
-  tab.classList.add('active');
-  const view = $(`#${tab.dataset.statsView}`);
-  if (view) { view.classList.remove('hidden'); view.classList.add('active'); }
-  if (tab.dataset.statsView === 'territoryStatsView') renderTerritoryStats();
-});
-
-const showWarFormBtn = $('#showWarForm');
-if (showWarFormBtn) showWarFormBtn.onclick = () => {
-  $('#warFormCard')?.classList.remove('hidden');
-  $('#warDate').value ||= new Date().toISOString().slice(0, 10);
-};
-
-const cancelWarFormBtn = $('#cancelWarForm');
-if (cancelWarFormBtn) cancelWarFormBtn.onclick = resetWarForm;
-
-const baselineForm = $('#territoryBaselineForm');
-if (baselineForm) baselineForm.onsubmit = event => {
-  event.preventDefault();
-  ['Village', 'City', 'Fort'].forEach(type => { state.territory.baseline[type] = Math.max(0, Number($(`#baseline${type}`).value) || 0); });
-  save();
-  renderTerritoryStats();
-};
-
-const territoryWarForm = $('#territoryWarForm');
-if (territoryWarForm) territoryWarForm.onsubmit = event => {
-  event.preventDefault();
-  const readCounts = prefix => Object.fromEntries(['Village', 'City', 'Fort'].map(type => [type, Math.max(0, Number($(`#${prefix}${type}`).value) || 0)]));
-  state.territory.wars.push({ date: $('#warDate').value, outcome: $('#warOutcome').value, opponent: $('#warOpponent').value.trim(), gained: readCounts('gained'), lost: readCounts('lost'), notes: $('#warNotes').value.trim() });
-  save();
-  resetWarForm();
-  renderTerritoryStats();
-};
 
 const loginForm = $('#loginForm');
 if (loginForm) {

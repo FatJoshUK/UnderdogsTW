@@ -271,6 +271,12 @@ document.querySelectorAll('.stats-tab').forEach(tab => tab.onclick = () => {
   if (target) { target.classList.add('active'); target.hidden = false; }
 });
 
+const appendBattleRecord = record => {
+  state.battleHistory.push({ ...record, roster: record.roster || [] });
+  save();
+  renderStats();
+};
+
 const battleEntryForm = $('#battleEntryForm');
 const today = () => new Date().toISOString().slice(0, 10);
 if ($('#battleDate')) $('#battleDate').value = state.lastBattleDate || today();
@@ -289,11 +295,10 @@ if (battleEntryForm) battleEntryForm.onsubmit = e => {
     fiefType: $('#fiefType').value, outcome: $('#battleOutcome').value, endStatus: $('#endStatus').value,
     notes: $('#battleNotes').value.trim(), roster: currentRoster()
   };
-  state.battleHistory.push(record);
+  appendBattleRecord(record);
   if ($('#rememberBattleDate').checked) state.lastBattleDate = date;
   else state.lastBattleDate = '';
   save();
-  renderStats();
   battleEntryForm.reset();
   $('#battleDate').value = state.lastBattleDate || today();
   $('#battleRole').value = 'attacking';
@@ -466,9 +471,7 @@ if (confirmWarBtn) {
       if (roster.includes(name)) stat.attended++; 
       else stat.missed++; 
     });
-    state.battleHistory.push({ id: Date.now(), date: new Date().toISOString().slice(0, 10), roster, outcome: 'win', role: 'attacking', opponent: 'Territory War', fiefType: 'Village', endStatus: 'Recorded', notes: '' });
-    save();
-    renderStats();
+    appendBattleRecord({ id: Date.now(), date: new Date().toISOString().slice(0, 10), roster, outcome: 'win', role: 'attacking', opponent: 'Territory War', fiefType: 'Village', endStatus: 'Recorded', notes: '' });
     const details = $('#confirmDetails');
     if (details) details.textContent = `${roster.length} attended · ${Math.max(0, state.data.players.length - roster.length)} did not attend`;
     const res = $('#confirmResult');

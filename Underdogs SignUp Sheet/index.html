@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Underdogs | Team Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-glow"></div>
+    <header class="topbar">
+      <a class="brand" href="#team-builder" aria-label="The Underdogs home">
+        <img class="brand-crest" src="underdogs-crest.jpg" alt="The Underdogs house crest" />
+        <span><b>THE UNDERDOGS</b><small>CONQUEROR'S BLADE // TERRITORY WAR</small></span>
+      </a>
+      <nav class="tabs" aria-label="Main navigation">
+        <button class="tab active" data-tab="builder">Team Builder</button>
+        <button class="tab" data-tab="vault">Admin Panel <span class="lock-dot">●</span></button>
+        <button class="tab" data-tab="stats">Stats</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="builder" class="panel active">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">TERRITORY WAR // SEASON PLANNER</p>
+            <h1><span>THE</span> UNDERDOGS<br><em>Always the underdogs.<br>Never the losers.</em></h1>
+          </div>
+          <img class="hero-crest" src="underdogs-crest.jpg" alt="" aria-hidden="true" />
+        </div>
+
+        <section class="control-bar" aria-label="Team builder settings">
+          <label>Number of groups
+            <select id="groupCount" aria-label="Number of groups"></select>
+          </label>
+          <label>Players per group
+            <select id="playersPerGroup" aria-label="Players per group"></select>
+          </label>
+          <div class="roster-total"><b id="playerTotal">0</b><span>PLAYERS PLANNED</span></div>
+        </section>
+
+        <div class="builder-head"><p>GROUP DEPLOYMENT</p><button id="clearPlans" class="text-button">Clear selections</button></div>
+        <div id="groups" class="groups"></div>
+        <section class="confirm-bar"><div><p class="eyebrow">WAR ROSTER READY</p><h2>Lock in this Territory War</h2><p>Records attendance for every player in the Roster Vault.</p></div><button id="confirmWar" class="primary confirm-button">Confirm roster <span>→</span></button></section>
+        <div id="confirmResult" class="confirm-result hidden"><b>Territory War recorded.</b><span id="confirmDetails"></span><div><button id="discordExport" class="secondary">Copy for Discord</button><button id="shareLink" class="secondary">Copy read-only link</button></div></div>
+      </section>
+
+      <!-- NEW WAR PLAN PANEL -->
+      <section id="warplan" class="panel">
+        <div class="stats-heading">
+          <p class="eyebrow">TERRITORY CONTROL // CAMPAIGN MAP</p>
+          <h2>Strategic War Plan</h2>
+          <p>Click any fief to toggle its status and set attack details.</p>
+        </div>
+        <div class="warplan-container">
+          <div class="campaign-map" id="campaignMap">
+            <!-- Fief nodes will load here -->
+          </div>
+          <div class="fief-details-card" id="fiefDetailsPanel">
+            <h3>Select a Fief</h3>
+            <p>Click a node on the map to configure attack vectors and meet points.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="stats" class="panel">
+        <div class="battle-log-heading"><div><p class="eyebrow">TERRITORY WAR // BATTLE LOG</p><h2>Battle Log</h2><p>Record every engagement and keep the campaign history at hand.</p></div><span class="battle-log-mark">TW</span></div>
+        <div class="stats-subtabs" role="tablist" aria-label="Stats views"><button class="stats-subtab active" data-stats-view="battleLogView">Battle Log</button><button class="stats-subtab" data-stats-view="attendanceLeaderboardView">Attendance Leaderboard</button></div>
+        <div id="battleLogView" class="stats-subview active">
+          <div class="battle-log-layout">
+            <section class="battle-form-card">
+              <div class="battle-card-heading"><div><p class="eyebrow">QUICK ENTRY</p><h3>Record TW Battle</h3></div><span class="battle-card-icon">✦</span></div>
+              <form id="battleForm" class="battle-form">
+                <div class="battle-form-row"><label>Date<input id="battleDate" type="date" required /></label><label class="remember-date"><span>Remember date</span><input id="rememberBattleDate" type="checkbox" /> <small>Use for next entry</small></label></div>
+                <fieldset><legend>Role</legend><div class="segmented-control"><button type="button" class="segment active" data-field="battleRole" data-value="attacking">Attacking</button><button type="button" class="segment" data-field="battleRole" data-value="defending">Defending</button></div><input type="hidden" id="battleRole" value="attacking" /></fieldset>
+                <label>Opponent House<input id="battleOpponent" placeholder="Enter opposing house" required /></label>
+                <label>Fief Type<select id="battleFiefType"><option>Village</option><option>City</option><option>Fort</option></select></label>
+                <fieldset><legend>Outcome</legend><div class="segmented-control"><button type="button" class="segment victory active" data-field="battleOutcome" data-value="victory">Victory</button><button type="button" class="segment defeat" data-field="battleOutcome" data-value="defeat">Defeat</button></div><input type="hidden" id="battleOutcome" value="victory" /></fieldset>
+                <label>End Location / Status<select id="battleEndStatus"><option value="secured">Secured</option><option value="held">Held at position</option><option value="base">Fell back to base</option></select></label>
+                <label>Battle Notes<textarea id="battleNotes" rows="5" placeholder="Briefly describe the engagement..."></textarea></label>
+                <div class="battle-form-actions"><button id="cancelBattleEdit" class="secondary hidden" type="button">Cancel edit</button><button class="primary" type="submit">Save Battle Record <span>→</span></button></div>
+              </form>
+            </section>
+            <section class="battle-history-card">
+              <div class="battle-card-heading"><div><p class="eyebrow">FIELD REPORTS</p><h3>Battle History</h3></div><span id="battleCount" class="battle-count">0 records</span></div>
+              <div id="battleHistory" class="battle-history"></div>
+            </section>
+          </div>
+        </div>
+        <div id="attendanceLeaderboardView" class="stats-subview hidden">
+          <div class="leaderboard-heading"><div><p class="eyebrow">HOUSE PARTICIPATION</p><h3>Attendance Leaderboard</h3><p>Participation updates whenever a Team Builder roster is confirmed.</p></div><span id="leaderboardWarCount" class="battle-count">0 wars tracked</span></div>
+          <div class="leaderboard-toolbar"><label class="leaderboard-search">Search players<input id="leaderboardSearch" type="search" placeholder="Search player name..." autocomplete="off" /></label></div>
+          <div class="leaderboard-table-wrap"><table class="leaderboard-table"><thead><tr><th><button class="sort-button" data-sort-key="name">Player Name <span>↕</span></button></th><th><button class="sort-button" data-sort-key="total">Total Wars Tracked <span>↕</span></button></th><th><button class="sort-button" data-sort-key="attended">Attended <span>↕</span></button></th><th><button class="sort-button" data-sort-key="missed">Missed TW <span>↕</span></button></th><th><button class="sort-button" data-sort-key="rate">Attendance Rate <span>↕</span></button></th></tr></thead><tbody id="leaderboardBody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="vault" class="panel">
+        <div id="loginScreen" class="login-wrap">
+          <div class="login-card">
+            <div class="large-crest">UD</div>
+            <p class="eyebrow">RESTRICTED ACCESS</p>
+            <h2>Admin Panel</h2>
+            <p>Sign in to manage your house roster and Territory War records.</p>
+            <form id="loginForm">
+              <label>Username<input id="username" autocomplete="username" required /></label>
+              <label>Password<input id="password" type="password" autocomplete="current-password" required /></label>
+              <p id="loginError" class="login-error" role="alert"></p>
+              <button class="primary" type="submit">Enter the vault <span>→</span></button>
+            </form>
+          </div>
+        </div>
+        <div id="vaultContent" class="vault-content hidden">
+          <div class="vault-heading"><div><p class="eyebrow">HOUSE COMMAND</p><h2>Admin Panel</h2><p>Manage the roster and Territory War records.</p></div><button id="logOut" class="text-button">Log out</button></div>
+          <div class="admin-tabs" role="tablist"><button class="admin-tab active" data-admin-tab="roster">Roster Vault</button><button class="admin-tab" data-admin-tab="attendance">Attendance Control</button></div>
+          <div id="roster" class="admin-section active">
+            <div class="vault-grid">
+              <section class="data-card"><div class="card-title"><span class="icon">♟</span><div><h3>Players</h3><p>Your available warband</p></div></div><form data-list="players"><input placeholder="Add player name" aria-label="Player name" /><button type="submit">Add</button></form><ul id="playersList" class="data-list"></ul></section>
+              <section class="data-card"><div class="card-title"><span class="icon">⚔</span><div><h3>Units</h3><p>Available unit choices</p></div></div><form data-list="units"><input placeholder="Add unit name" aria-label="Unit name" /><button type="submit">Add</button></form><ul id="unitsList" class="data-list"></ul></section>
+              <section class="data-card"><div class="card-title"><span class="icon">✹</span><div><h3>Artillery</h3><p>Dedicated player slots</p></div></div><form data-list="artillery"><input placeholder="Add artillery name" aria-label="Artillery name" /><button type="submit">Add</button></form><ul id="artilleryList" class="data-list"></ul></section>
+            </div>
+          </div>
+          <div id="attendance" class="admin-section">
+            <div class="attendance-head"><div><h3>Attendance Control</h3><p>Override a player’s record or reset the whole leaderboard.</p></div><button id="resetStats" class="danger-button">Reset all stats</button></div>
+            <div class="attendance-editor"><table><thead><tr><th>House member</th><th>Attended</th><th>Did not attend</th></tr></thead><tbody id="attendanceEditor"></tbody></table></div>
+            <button id="saveAttendance" class="primary">Save attendance changes <span>→</span></button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <template id="groupTemplate">
+      <article class="group-card"><header><div><span class="group-number"></span><input class="group-name" aria-label="Group name" /></div><div class="group-header-right"><div class="group-summary"></div><span class="group-size"></span></div></header><div class="player-list"></div></article>
+    </template>
+    <template id="playerTemplate">
+      <div class="player-card"><div class="player-top"><span class="player-index"></span><input class="player-select" aria-label="Select player" /></div><div class="loadout"><div class="unit-slots"></div><div class="artillery-slot"><span>ARTILLERY</span><input class="artillery-select" aria-label="Select artillery" /></div></div></div>
+    </template>
+    <script src="app.js?v=artillery-db"></script>
+  </body>
+</html>

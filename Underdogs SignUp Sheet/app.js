@@ -44,6 +44,7 @@ state.data.units = [...new Set([...state.data.units, ...suppliedUnits])];
 state.data.artillery = [...new Set([...state.data.artillery, ...suppliedArtillery])];
 state.plans ??= {};
 state.stats ??= {};
+state.battles ??= [];
 state.fiefs ??= {
   fief1: { name: 'Anഭt', type: 'Village', status: 'owned', notes: 'Primary resource node.' },
   fief2: { name: 'Reginopolis', type: 'City', status: 'enemy', notes: 'Heavy fortification.' },
@@ -289,18 +290,18 @@ function renderLists() {
   });
 }
 
-function renderStats() {
-  const rows = state.data.players.map(name => ({ name, ...(state.stats[name] || { attended: 0, missed: 0 }) }));
-  const anyWars = rows.some(row => row.attended || row.missed);
-  if ($('#statsEmpty')) $('#statsEmpty').classList.toggle('hidden', anyWars); 
-  if ($('#statsTableWrap')) $('#statsTableWrap').classList.toggle('hidden', !anyWars);
-  if ($('#statsBody')) {
-    $('#statsBody').innerHTML = rows.map(row => { 
-      const total = row.attended + row.missed; 
-      const rate = total ? Math.round((row.attended / total) * 100) : 0; 
-      return `<tr><td>${escapeHtml(row.name)}</td><td>${row.attended}</td><td>${row.missed}</td><td class="rate">${rate}%</td></tr>`; 
-    }).join('');
-  }
+function renderBattleLog() {
+  const count = $('#battleCount');
+  if (count) count.textContent = `${state.battles.length} ${state.battles.length === 1 ? 'record' : 'records'}`;
+  const history = $('#battleHistory');
+  if (!history) return;
+  history.innerHTML = state.battles.length ? [...state.battles].reverse().map((battle, reverseIndex) => {
+    const index = state.battles.length - 1 - reverseIndex;
+    const date = new Date(`${battle.date}T12:00:00`).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+    const roleLabel = battle.role === 'defending' ? 'Defense' : 'Attack';
+    const statusLabel = { secured: 'Secured', held: 'Held at position', base: 'Fell back to base' }[battle.endStatus] || battle.endStatus;
+    return `<article class="battle-entry"><div class="battle-entry-main"><div class="battle-entry-date"><strong>${escapeHtml(date)}</strong><small>${escapeHtml(battle.time || '')}</small></div><span class="battle-badge role-${battle.role}">${roleLabel}</span><span class="fief-badge">◈ ${escapeHtml(battle.fiefType)}</span><div class="battle-opponent"><strong>${escapeHtml(battle.opponent)}</strong><small>${escapeHtml(statusLabel)}</small></div><span class="battle-badge outcome-${battle.outcome}">${battle.outcome === 'victory' ? 'Victory' : 'Defeat'}</span><div class="battle-notes">${escapeHtml(battle.notes || 'No notes added.')}</div><div class="battle-actions"><button class="icon-button" type="button" data-battle-action="edit" data-battle-index="${index}" aria-label="Edit battle">✎</button><button class="icon-button danger" type="button" data-battle-action="delete" data-battle-index="${index}" aria-label="Delete battle">×</button></div></div></article>`;
+  }).join('') : '<div class="battle-empty"><span>✦</span><strong>No battle records yet</strong><p>Use the quick-entry form to log your first Territory War engagement.</p></div>';
 }
 
 function renderAttendanceEditor() {
@@ -318,7 +319,7 @@ document.querySelectorAll('.tabs .tab').forEach(tab => tab.onclick = () => {
   tab.classList.add('active'); 
   const targetPanel = $(`#${tab.dataset.tab}`);
   if (targetPanel) targetPanel.classList.add('active'); 
-  if (tab.dataset.tab === 'stats') renderStats();
+  if (tab.dataset.tab === 'stats') renderBattleLog();
   if (tab.dataset.tab === 'vault') renderLists();
   if (tab.dataset.tab === 'warplan') {
     renderCampaignMap();
@@ -333,6 +334,69 @@ document.querySelectorAll('.admin-tab').forEach(tab => tab.onclick = () => {
   if (targetSec) targetSec.classList.add('active'); 
   if (tab.dataset.adminTab === 'attendance') renderAttendanceEditor(); 
 });
+
+const battleDatePreference = localStorage.getItem('underdogs-battle-date') || new Date().toISOString().slice(0, 10);
+if ($('#battleDate')) $('#battleDate').value = battleDatePreference;
+if ($('#rememberBattleDate')) $('#rememberBattleDate').checked = localStorage.getItem('underdogs-remember-battle-date') === 'true';
+
+document.querySelectorAll('.segment').forEach(button => button.onclick = () => {
+  const field = $(`#${button.dataset.field}`);
+  document.querySelectorAll(`.segment[data-field="${button.dataset.field}"]`).forEach(segment => segment.classList.remove('active'));
+  button.classList.add('active');
+  if (field) field.value = button.dataset.value;
+});
+
+function resetBattleForm() {
+  const form = $('#battleForm');
+  if (form) form.reset();
+  $('#battleRole').value = 'attacking';
+  $('#battleOutcome').value = 'victory';
+  document.querySelectorAll('.segment').forEach(segment => segment.classList.toggle('active', (segment.dataset.field === 'battleRole' && segment.dataset.value === 'attacking') || (segment.dataset.field === 'battleOutcome' && segment.dataset.value === 'victory')));
+  $('#battleDate').value = $('#rememberBattleDate').checked ? (localStorage.getItem('underdogs-battle-date') || new Date().toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10);
+  $('#cancelBattleEdit')?.classList.add('hidden');
+  $('#battleForm')?.removeAttribute('data-edit-index');
+}
+
+const battleForm = $('#battleForm');
+if (battleForm) battleForm.onsubmit = event => {
+  event.preventDefault();
+  const battle = { date: $('#battleDate').value, role: $('#battleRole').value, opponent: $('#battleOpponent').value.trim(), fiefType: $('#battleFiefType').value, outcome: $('#battleOutcome').value, endStatus: $('#battleEndStatus').value, notes: $('#battleNotes').value.trim(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+  const editIndex = battleForm.dataset.editIndex;
+  if (editIndex === undefined) state.battles.push(battle); else state.battles[+editIndex] = battle;
+  if ($('#rememberBattleDate').checked) localStorage.setItem('underdogs-battle-date', battle.date); else localStorage.removeItem('underdogs-battle-date');
+  localStorage.setItem('underdogs-remember-battle-date', $('#rememberBattleDate').checked);
+  save();
+  resetBattleForm();
+  renderBattleLog();
+};
+
+document.addEventListener('click', event => {
+  const action = event.target.closest('[data-battle-action]');
+  if (!action) return;
+  const index = +action.dataset.battleIndex;
+  if (action.dataset.battleAction === 'delete') {
+    if (!confirm('Delete this battle record?')) return;
+    state.battles.splice(index, 1);
+    save();
+    renderBattleLog();
+    return;
+  }
+  const battle = state.battles[index];
+  if (!battle) return;
+  $('#battleDate').value = battle.date;
+  $('#battleOpponent').value = battle.opponent;
+  $('#battleFiefType').value = battle.fiefType;
+  $('#battleEndStatus').value = battle.endStatus;
+  $('#battleNotes').value = battle.notes || '';
+  $('#battleRole').value = battle.role;
+  $('#battleOutcome').value = battle.outcome;
+  document.querySelectorAll('.segment').forEach(segment => segment.classList.toggle('active', (segment.dataset.field === 'battleRole' && segment.dataset.value === battle.role) || (segment.dataset.field === 'battleOutcome' && segment.dataset.value === battle.outcome)));
+  battleForm.dataset.editIndex = index;
+  $('#cancelBattleEdit')?.classList.remove('hidden');
+  $('#battleForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+$('#cancelBattleEdit')?.addEventListener('click', resetBattleForm);
 
 const loginForm = $('#loginForm');
 if (loginForm) {
@@ -373,7 +437,7 @@ document.querySelectorAll('.data-card form').forEach(form => form.onsubmit = e =
     save(); 
     renderLists(); 
     renderBuilder(); 
-    renderStats(); 
+    renderBattleLog(); 
   } 
 });
 
@@ -383,7 +447,7 @@ document.addEventListener('click', e => {
   save(); 
   renderLists(); 
   renderBuilder(); 
-  renderStats(); 
+  renderBattleLog(); 
 });
 
 const saveAttBtn = $('#saveAttendance');
@@ -394,7 +458,7 @@ if (saveAttBtn) {
       stat[input.dataset.stat] = Math.max(0, Number(input.value) || 0); 
     }); 
     save(); 
-    renderStats(); 
+    renderBattleLog(); 
     renderAttendanceEditor(); 
     saveAttBtn.textContent = 'Attendance saved'; 
     setTimeout(() => saveAttBtn.innerHTML = 'Save attendance changes <span>→</span>', 1600); 
@@ -407,7 +471,7 @@ if (resetStatsBtn) {
     if (!confirm('Reset attendance for every house member to zero? This cannot be undone.')) return; 
     state.stats = {}; 
     save(); 
-    renderStats(); 
+    renderBattleLog(); 
     renderAttendanceEditor(); 
   };
 }
@@ -461,7 +525,7 @@ if (confirmWarBtn) {
       else stat.missed++; 
     });
     save(); 
-    renderStats(); 
+    renderBattleLog(); 
     const details = $('#confirmDetails');
     if (details) details.textContent = `${roster.length} attended · ${Math.max(0, state.data.players.length - roster.length)} did not attend`;
     const res = $('#confirmResult');
@@ -508,7 +572,7 @@ if (sessionStorage.getItem('underdogs-vault') === 'open') {
   renderAttendanceEditor(); 
 }
 
-renderStats();
+renderBattleLog();
 
 if (shared) { 
   document.querySelectorAll('input,select,button').forEach(el => { 

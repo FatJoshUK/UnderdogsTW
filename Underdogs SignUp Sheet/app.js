@@ -76,6 +76,56 @@ function renderSignups() {
   }).join('');
   const total = $('#signupTotal');
   if (total) total.textContent = `${signups.length} response${signups.length === 1 ? '' : 's'}`;
+  renderHomepage();
+}
+
+function londonParts(date) {
+  return Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(date).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
+}
+
+function londonInstant(year, month, day, hour, minute) {
+  const target = Date.UTC(year, month - 1, day, hour, minute);
+  let guess = target;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const parts = londonParts(new Date(guess));
+    const observed = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute), Number(parts.second));
+    guess += target - observed;
+  }
+  return new Date(guess);
+}
+
+function nextTerritoryWar(now = new Date()) {
+  const local = londonParts(now);
+  const base = new Date(Date.UTC(Number(local.year), Number(local.month) - 1, Number(local.day)));
+  for (let dayOffset = 0; dayOffset <= 7; dayOffset++) {
+    const date = new Date(base);
+    date.setUTCDate(base.getUTCDate() + dayOffset);
+    if (![2, 6].includes(date.getUTCDay())) continue;
+    const candidate = londonInstant(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate(), 19, 30);
+    if (candidate > now) return candidate;
+  }
+}
+
+function renderHomepage() {
+  const countdown = $('#warCountdown');
+  if (!countdown) return;
+  const target = nextTerritoryWar();
+  const difference = Math.max(0, target - Date.now());
+  const days = Math.floor(difference / 86400000);
+  const hours = Math.floor((difference % 86400000) / 3600000);
+  const minutes = Math.floor((difference % 3600000) / 60000);
+  const seconds = Math.floor((difference % 60000) / 1000);
+  const values = [days, hours, minutes, seconds];
+  countdown.querySelectorAll('div b').forEach((element, index) => { element.textContent = String(values[index]).padStart(2, '0'); });
+  const targetParts = londonParts(target);
+  const dayName = targetParts.weekday === 'Tue' ? 'Tuesday' : 'Saturday';
+  const targetLabel = `${dayName} · 7:30 PM UK time`;
+  if ($('#countdownTarget')) $('#countdownTarget').textContent = targetLabel;
+  if ($('#nextWarDay')) $('#nextWarDay').textContent = `${dayName} deployment`;
+  if ($('#nextWarDayDetail')) $('#nextWarDayDetail').textContent = dayName;
+
+  const signups = signUpRepository.list();
+  ['yes', 'maybe', 'no'].forEach(status => { const count = $(`#home${status[0].toUpperCase()}${status.slice(1)}Count`); if (count) count.textContent = signups.filter(signup => signup.availability === status).length; });
 }
 
 function setupSignups() {
@@ -389,11 +439,19 @@ document.querySelectorAll('.tabs .tab').forEach(tab => tab.onclick = () => {
   if (targetPanel) targetPanel.classList.add('active'); 
   if (tab.dataset.tab === 'stats') renderStats();
   if (tab.dataset.tab === 'signup') renderSignups();
+  if (tab.dataset.tab === 'home') renderHomepage();
   if (tab.dataset.tab === 'warplan') {
     renderCampaignMap();
     renderFiefDetails();
   }
 });
+
+document.querySelectorAll('.homepage-link').forEach(link => link.onclick = () => {
+  const targetTab = document.querySelector(`.tabs .tab[data-tab="${link.dataset.tabTarget}"]`);
+  if (targetTab) targetTab.click();
+});
+
+setInterval(renderHomepage, 1000);
 
 document.querySelectorAll('.admin-tab').forEach(tab => tab.onclick = () => { 
   document.querySelectorAll('.admin-tab,.admin-section').forEach(x => x.classList.remove('active')); 
@@ -564,6 +622,7 @@ if (shareLinkBtn) {
 
 setupControls();
 setupSignups();
+renderHomepage();
 renderBuilder(); 
 renderCampaignMap();
 renderFiefDetails();

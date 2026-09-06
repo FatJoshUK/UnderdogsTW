@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Underdogs | Team Builder</title>
+    <title>The Underdogs | Territory War</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -12,12 +12,13 @@
   <body>
     <div class="page-glow"></div>
     <header class="topbar">
-      <a class="brand" href="#team-builder" aria-label="The Underdogs home">
+      <a class="brand" href="#home" aria-label="The Underdogs home">
         <img class="brand-crest" src="underdogs-crest.jpg" alt="The Underdogs house crest" />
         <span><b>THE UNDERDOGS</b><small>CONQUEROR'S BLADE // TERRITORY WAR</small></span>
       </a>
       <nav class="tabs" aria-label="Main navigation">
-        <button class="tab active" data-tab="builder">Team Builder</button>
+        <button class="tab active" data-tab="home">Home</button>
+        <button class="tab" data-tab="builder">Team Builder</button>
         <button class="tab" data-tab="warplan">War Plan</button>
         <button class="tab" data-tab="vault">Admin Panel <span class="lock-dot">●</span></button>
         <button class="tab" data-tab="stats">Stats</button>
@@ -26,7 +27,36 @@
     </header>
 
     <main>
-      <section id="builder" class="panel active">
+      <section id="home" class="panel active">
+        <div class="home-hero">
+          <div class="home-hero-copy">
+            <p class="eyebrow">THE UNDERDOGS // COMMAND CENTRE</p>
+            <h1><span>THE UNDERDOGS</span><em>TERRITORY WAR</em></h1>
+            <p class="home-intro">Stand together. Hold the line. Take the territory.</p>
+          </div>
+          <img class="home-crest" src="underdogs-crest.jpg" alt="" aria-hidden="true" />
+          <div class="countdown-block" aria-live="polite">
+            <p class="countdown-kicker">NEXT TERRITORY WAR</p>
+            <div class="countdown" id="warCountdown"><div><b>--</b><span>DAYS</span></div><i>:</i><div><b>--</b><span>HOURS</span></div><i>:</i><div><b>--</b><span>MINUTES</span></div><i>:</i><div><b>--</b><span>SECONDS</span></div></div>
+            <p id="countdownTarget" class="countdown-target">Calculating next deployment…</p>
+          </div>
+        </div>
+        <section class="next-war-panel">
+          <div><p class="eyebrow">NEXT TERRITORY WAR</p><h2 id="nextWarDay">Upcoming deployment</h2></div>
+          <dl><div><dt>DAY</dt><dd id="nextWarDayDetail">—</dd></div><div><dt>TIME</dt><dd>7:30 PM</dd></div><div><dt>TIMEZONE</dt><dd>UK Time</dd></div><div><dt>STATUS</dt><dd class="status-upcoming">Upcoming</dd></div></dl>
+          <button class="primary homepage-link" data-tab-target="signup">Sign up for Territory War <span>→</span></button>
+        </section>
+        <section class="home-section">
+          <div class="section-heading"><div><p class="eyebrow">LIVE ATTENDANCE</p><h2>Warband readiness</h2></div><button class="secondary homepage-link" data-tab-target="signup">View full sign up sheet <span>→</span></button></div>
+          <div class="attendance-summary"><article class="attendance-card yes"><span>✓</span><b id="homeYesCount">0</b><h3>YES</h3><p>Confirmed to attend</p></article><article class="attendance-card maybe"><span>?</span><b id="homeMaybeCount">0</b><h3>MAYBE</h3><p>May be able to attend</p></article><article class="attendance-card no"><span>×</span><b id="homeNoCount">0</b><h3>NO</h3><p>Unable to attend</p></article></div>
+        </section>
+        <div class="home-columns">
+          <section class="home-section schedule-section"><div class="section-heading"><div><p class="eyebrow">THE CAMPAIGN RHYTHM</p><h2>Territory War Schedule</h2></div></div><p class="section-note">All times are UK time.</p><table class="schedule-table"><thead><tr><th>Day</th><th>Time</th></tr></thead><tbody><tr><td>Tuesday</td><td>7:30 PM</td></tr><tr><td>Saturday</td><td>7:30 PM</td></tr></tbody></table></section>
+          <section class="home-section"><div class="section-heading"><div><p class="eyebrow">HOUSE INFORMATION</p><h2>Quick access</h2></div></div><div class="quick-links"><button class="quick-link homepage-link" data-tab-target="signup"><b>TW Sign Up</b><span>Declare your availability →</span></button><button class="quick-link homepage-link" data-tab-target="warplan"><b>War Plan</b><span>Review the campaign map →</span></button><button class="quick-link homepage-link" data-tab-target="builder"><b>Team Builder</b><span>Prepare the warband →</span></button><button class="quick-link homepage-link" data-tab-target="stats"><b>Members & Stats</b><span>Review house records →</span></button></div></section>
+        </div>
+      </section>
+
+      <section id="builder" class="panel">
         <div class="hero">
           <div>
             <p class="eyebrow">TERRITORY WAR // SEASON PLANNER</p>

@@ -38,20 +38,98 @@ state.data ??= { players: ['Player One', 'Player Two'], units: ['Imperial Spearm
 state.data.units = [...new Set([...state.data.units, ...suppliedUnits])];
 state.plans ??= {};
 state.stats ??= {};
-state.battleHistory ??= [];
+state.fiefs ??= {
+  fief1: { name: 'Anഭt', type: 'Village', status: 'owned', notes: 'Primary resource node.' },
+  fief2: { name: 'Reginopolis', type: 'City', status: 'enemy', notes: 'Heavy fortification.' },
+  fief3: { name: 'Turm', type: 'Fief', status: 'target', notes: 'Next target for acquisition.' }
+};
+state.selectedFiefId ??= 'fief1';
 
 const save = () => { if (!shared) localStorage.setItem('underdogs-builder', JSON.stringify(state)); };
 const $ = s => document.querySelector(s);
 
+const signUpRepository = {
+  key: 'underdogs-signups',
+  list() {
+    try { return JSON.parse(localStorage.getItem(this.key) || '[]'); } catch { return []; }
+  },
+  add(signup) {
+    const signups = this.list();
+    signups.push(signup);
+    localStorage.setItem(this.key, JSON.stringify(signups));
+    return signups;
+  }
+};
+
+function renderSignups() {
+  const list = $('#signupLists');
+  if (!list) return;
+  const signups = signUpRepository.list();
+  const statuses = [
+    { key: 'yes', label: '✓ YES', empty: 'No confirmed attendees yet.' },
+    { key: 'maybe', label: '? MAYBE', empty: 'No maybes yet.' },
+    { key: 'no', label: '× NO', empty: 'No declines yet.' }
+  ];
+  list.innerHTML = statuses.map(({ key, label, empty }) => {
+    const entries = signups.filter(signup => signup.availability === key);
+    return `<section class="signup-list ${key}"><h4>${label}<span>(${entries.length})</span></h4><ul class="signup-entries">${entries.length ? entries.map(signup => `<li class="signup-entry"><b>${escapeHtml(signup.name)}</b>${signup.reason ? `<p>Reason: ${escapeHtml(signup.reason)}</p>` : ''}</li>`).join('') : `<li class="signup-empty">${empty}</li>`}</ul></section>`;
+  }).join('');
+  const total = $('#signupTotal');
+  if (total) total.textContent = `${signups.length} response${signups.length === 1 ? '' : 's'}`;
+}
+
+function setupSignups() {
+  const form = $('#signupForm');
+  if (!form) return;
+  let selectedAvailability = '';
+  let isSubmitting = false;
+  const options = [...document.querySelectorAll('.availability-option')];
+  const reasonWrap = $('#signupReasonWrap');
+  const error = $('#signupError');
+  const submit = $('#submitSignup');
+
+  options.forEach(option => option.onclick = () => {
+    selectedAvailability = option.dataset.availability;
+    options.forEach(button => button.classList.toggle('selected', button === option));
+    reasonWrap?.classList.toggle('visible', selectedAvailability !== 'yes');
+    if (error) error.textContent = '';
+  });
+
+  form.onsubmit = event => {
+    event.preventDefault();
+    if (isSubmitting) return;
+    const name = $('#signupName')?.value.trim();
+    const reason = $('#signupReason')?.value.trim();
+    if (!name) {
+      if (error) error.textContent = 'Enter your in-game or Discord name.';
+      $('#signupName')?.focus();
+      return;
+    }
+    if (!selectedAvailability) {
+      if (error) error.textContent = 'Choose YES, MAYBE, or NO before submitting.';
+      return;
+    }
+    isSubmitting = true;
+    if (submit) submit.disabled = true;
+    signUpRepository.add({ id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`, name, availability: selectedAvailability, reason, createdAt: Date.now() });
+    form.reset();
+    selectedAvailability = '';
+    options.forEach(button => button.classList.remove('selected'));
+    reasonWrap?.classList.remove('visible');
+    renderSignups();
+    if (error) error.textContent = 'Sign-up recorded.';
+    setTimeout(() => {
+      isSubmitting = false;
+      if (submit) submit.disabled = false;
+      if (error) error.textContent = '';
+    }, 500);
+  };
+  renderSignups();
+}
+
 if (shared) {
   try { Object.assign(state, JSON.parse(decodeURIComponent(escape(atob(shared))))); } catch { /* Fallback */ }
 }
-state.stats ??= {};
-state.battleHistory ??= [];
-state.lastBattleDate ??= '';
-
-let leaderboardSearch = '';
-let leaderboardSort = { key: 'rate', direction: 'desc' };
 
 function configureSearchInput(input, id, values, placeholder) { 
   input.placeholder = placeholder; 
@@ -192,6 +270,85 @@ function renderBuilder() {
   save();
 }
 
+function renderCampaignMap() {
+  const mapContainer = $('#campaignMap');
+  if (!mapContainer) return;
+  mapContainer.innerHTML = '';
+
+  Object.entries(state.fiefs || {}).forEach(([id, fief]) => {
+    const node = document.createElement('div');
+    node.className = `fief-node ${fief.status || 'owned'}`;
+    if (state.selectedFiefId === id) {
+      node.style.outline = '2px solid var(--accent)';
+    }
+    node.innerHTML = `
+      <span class="fief-type">${escapeHtml(fief.type || 'Fief')}</span>
+      <div class="fief-name">${escapeHtml(fief.name || 'Unnamed')}</div>
+    `;
+    node.onclick = () => {
+      state.selectedFiefId = id;
+      save();
+      renderCampaignMap();
+      renderFiefDetails();
+    };
+    mapContainer.append(node);
+  });
+}
+
+function renderFiefDetails() {
+  const detailsContainer = $('#fiefDetailsCard');
+  if (!detailsContainer) return;
+  const fief = state.fiefs?.[state.selectedFiefId];
+  if (!fief) {
+    detailsContainer.innerHTML = '<p>Select a fief on the map to view details.</p>';
+    return;
+  }
+
+  detailsContainer.innerHTML = `
+    <h3>Fief Details</h3>
+    <label>
+      Fief Name
+      <input type="text" id="fiefNameInput" value="${escapeHtml(fief.name || '')}" />
+    </label>
+    <label>
+      Type
+      <input type="text" id="fiefTypeInput" value="${escapeHtml(fief.type || '')}" />
+    </label>
+    <label>
+      Status
+      <select id="fiefStatusSelect">
+        <option value="owned" ${fief.status === 'owned' ? 'selected' : ''}>Owned</option>
+        <option value="enemy" ${fief.status === 'enemy' ? 'selected' : ''}>Enemy</option>
+        <option value="target" ${fief.status === 'target' ? 'selected' : ''}>Target</option>
+      </select>
+    </label>
+    <label>
+      Notes / Plan
+      <textarea id="fiefNotesInput">${escapeHtml(fief.notes || '')}</textarea>
+    </label>
+  `;
+
+  $('#fiefNameInput').oninput = e => {
+    fief.name = e.target.value;
+    save();
+    renderCampaignMap();
+  };
+  $('#fiefTypeInput').oninput = e => {
+    fief.type = e.target.value;
+    save();
+    renderCampaignMap();
+  };
+  $('#fiefStatusSelect').onchange = e => {
+    fief.status = e.target.value;
+    save();
+    renderCampaignMap();
+  };
+  $('#fiefNotesInput').oninput = e => {
+    fief.notes = e.target.value;
+    save();
+  };
+}
+
 function renderLists() { 
   ['players','units','artillery'].forEach(type => { 
     const list = $(`#${type}List`); 
@@ -201,54 +358,18 @@ function renderLists() {
   }); 
 }
 
-function renderBattleLog() {
-  const records = state.battleHistory || [];
-  const wins = records.filter(record => record.outcome === 'win').length;
-  const losses = records.filter(record => record.outcome === 'loss').length;
-  if ($('#totalWins')) $('#totalWins').textContent = wins;
-  if ($('#totalLosses')) $('#totalLosses').textContent = losses;
-  if ($('#battleLogEmpty')) $('#battleLogEmpty').classList.toggle('hidden', records.length > 0);
-  const list = $('#battleHistoryList');
-  if (!list) return;
-  list.innerHTML = records.slice().reverse().map(record => {
-    const outcome = record.outcome === 'loss' ? 'loss' : 'win';
-    const rosterCount = record.roster?.length ?? 0;
-    return `<article class="battle-report ${outcome}">
-      <div class="report-top"><div><span class="report-date">${escapeHtml(record.date || 'Undated')}</span><h4>${escapeHtml(record.opponent || 'Territory War')}</h4></div><select class="outcome-select ${outcome}" data-record-id="${record.id}" aria-label="Battle outcome"><option value="win" ${outcome === 'win' ? 'selected' : ''}>Victory</option><option value="loss" ${outcome === 'loss' ? 'selected' : ''}>Defeat</option></select></div>
-      <div class="report-meta"><span>${escapeHtml(record.role || 'Attacking')}</span><span>${escapeHtml(record.fiefType || 'Village')}</span><span>${escapeHtml(record.endStatus || 'Recorded')}</span><span>${rosterCount} assigned</span></div>
-      ${record.notes ? `<p>${escapeHtml(record.notes)}</p>` : ''}
-      <button class="remove history-remove" data-record-id="${record.id}" aria-label="Delete battle record">Delete report</button>
-    </article>`;
-  }).join('');
-}
-
-function renderLeaderboard() {
-  const search = leaderboardSearch.trim().toLowerCase();
-  const rows = state.data.players.map(name => {
-    const stat = state.stats[name] || { attended: 0, missed: 0 };
-    const attended = Number(stat.attended) || 0;
-    const missed = Number(stat.missed) || 0;
-    const total = attended + missed;
-    return { name, attended, missed, total, rate: total ? Math.round((attended / total) * 100) : 0 };
-  }).filter(row => row.name.toLowerCase().includes(search));
-  rows.sort((a, b) => {
-    const first = a[leaderboardSort.key];
-    const second = b[leaderboardSort.key];
-    const result = typeof first === 'string' ? first.localeCompare(second) : first - second;
-    return result * (leaderboardSort.direction === 'asc' ? 1 : -1);
-  });
-  const hasPlayers = state.data.players.length > 0;
-  if ($('#leaderboardEmpty')) {
-    $('#leaderboardEmpty').textContent = hasPlayers && search ? 'No players match your search.' : 'Add players in the Roster Vault to start tracking attendance.';
-    $('#leaderboardEmpty').classList.toggle('hidden', rows.length > 0);
-  }
-  if ($('#leaderboardWrap')) $('#leaderboardWrap').classList.toggle('hidden', rows.length === 0);
-  if ($('#leaderboardBody')) $('#leaderboardBody').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.total}</td><td><span class="metric-pill attended">${row.attended}</span></td><td><span class="metric-pill missed">${row.missed}</span></td><td class="rate">${row.rate}%</td></tr>`).join('');
-}
-
 function renderStats() {
-  renderBattleLog();
-  renderLeaderboard();
+  const rows = state.data.players.map(name => ({ name, ...(state.stats[name] || { attended: 0, missed: 0 }) }));
+  const anyWars = rows.some(row => row.attended || row.missed);
+  if ($('#statsEmpty')) $('#statsEmpty').classList.toggle('hidden', anyWars); 
+  if ($('#statsTableWrap')) $('#statsTableWrap').classList.toggle('hidden', !anyWars);
+  if ($('#statsBody')) {
+    $('#statsBody').innerHTML = rows.map(row => { 
+      const total = row.attended + row.missed; 
+      const rate = total ? Math.round((row.attended / total) * 100) : 0; 
+      return `<tr><td>${escapeHtml(row.name)}</td><td>${row.attended}</td><td>${row.missed}</td><td class="rate">${rate}%</td></tr>`; 
+    }).join('');
+  }
 }
 
 function renderAttendanceEditor() {
@@ -261,65 +382,17 @@ function renderAttendanceEditor() {
   }
 }
 
-document.querySelectorAll('.stats-tab').forEach(tab => tab.onclick = () => {
-  document.querySelectorAll('.stats-tab,.stats-section').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.stats-tab').forEach(x => x.setAttribute('aria-selected', 'false'));
-  document.querySelectorAll('.stats-section').forEach(x => x.hidden = true);
-  tab.classList.add('active');
-  tab.setAttribute('aria-selected', 'true');
-  const target = $(`#${tab.dataset.statsTab}`);
-  if (target) { target.classList.add('active'); target.hidden = false; }
-});
-
-const appendBattleRecord = record => {
-  state.battleHistory.push({ ...record, roster: record.roster || [] });
-  save();
-  renderStats();
-};
-
-const battleEntryForm = $('#battleEntryForm');
-const today = () => new Date().toISOString().slice(0, 10);
-if ($('#battleDate')) $('#battleDate').value = state.lastBattleDate || today();
-document.querySelectorAll('[data-toggle]').forEach(button => button.onclick = () => {
-  const toggle = button.dataset.toggle;
-  document.querySelectorAll(`[data-toggle="${toggle}"]`).forEach(option => option.classList.remove('active'));
-  button.classList.add('active');
-  const input = toggle === 'role' ? $('#battleRole') : $('#battleOutcome');
-  if (input) input.value = button.dataset.value;
-});
-if (battleEntryForm) battleEntryForm.onsubmit = e => {
-  e.preventDefault();
-  const date = $('#battleDate').value || today();
-  const record = {
-    id: Date.now(), date, role: $('#battleRole').value, opponent: $('#opponentHouse').value.trim() || 'Territory War',
-    fiefType: $('#fiefType').value, outcome: $('#battleOutcome').value, endStatus: $('#endStatus').value,
-    notes: $('#battleNotes').value.trim(), roster: currentRoster()
-  };
-  appendBattleRecord(record);
-  if ($('#rememberBattleDate').checked) state.lastBattleDate = date;
-  else state.lastBattleDate = '';
-  save();
-  battleEntryForm.reset();
-  $('#battleDate').value = state.lastBattleDate || today();
-  $('#battleRole').value = 'attacking';
-  $('#battleOutcome').value = 'win';
-  document.querySelectorAll('[data-toggle="role"],[data-toggle="outcome"]').forEach(option => option.classList.toggle('active', option.dataset.value === (option.dataset.toggle === 'role' ? 'attacking' : 'win')));
-};
-
-const leaderboardSearchInput = $('#leaderboardSearch');
-if (leaderboardSearchInput) leaderboardSearchInput.oninput = e => { leaderboardSearch = e.target.value; renderLeaderboard(); };
-document.querySelectorAll('.sort-button').forEach(button => button.onclick = () => {
-  const key = button.dataset.sortKey;
-  leaderboardSort = leaderboardSort.key === key ? { key, direction: leaderboardSort.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: key === 'name' ? 'asc' : 'desc' };
-  renderLeaderboard();
-});
-
 document.querySelectorAll('.tabs .tab').forEach(tab => tab.onclick = () => { 
   document.querySelectorAll('.tab,.panel').forEach(x => x.classList.remove('active')); 
   tab.classList.add('active'); 
   const targetPanel = $(`#${tab.dataset.tab}`);
   if (targetPanel) targetPanel.classList.add('active'); 
-  if (tab.dataset.tab === 'stats') renderStats(); 
+  if (tab.dataset.tab === 'stats') renderStats();
+  if (tab.dataset.tab === 'signup') renderSignups();
+  if (tab.dataset.tab === 'warplan') {
+    renderCampaignMap();
+    renderFiefDetails();
+  }
 });
 
 document.querySelectorAll('.admin-tab').forEach(tab => tab.onclick = () => { 
@@ -373,28 +446,13 @@ document.querySelectorAll('.data-card form').forEach(form => form.onsubmit = e =
   } 
 });
 
-document.addEventListener('click', e => {
-  if (e.target.matches('.history-remove')) {
-    state.battleHistory = state.battleHistory.filter(record => record.id !== Number(e.target.dataset.recordId));
-    save();
-    renderStats();
-    return;
-  }
-  if (!e.target.matches('.remove')) return;
-  state.data[e.target.dataset.type].splice(+e.target.dataset.index, 1);
-  save();
-  renderLists();
-  renderBuilder();
-  renderStats();
-});
-
-document.addEventListener('change', e => {
-  if (!e.target.matches('.outcome-select')) return;
-  const record = state.battleHistory.find(item => item.id === Number(e.target.dataset.recordId));
-  if (!record) return;
-  record.outcome = e.target.value;
-  save();
-  renderBattleLog();
+document.addEventListener('click', e => { 
+  if (!e.target.matches('.remove')) return; 
+  state.data[e.target.dataset.type].splice(+e.target.dataset.index, 1); 
+  save(); 
+  renderLists(); 
+  renderBuilder(); 
+  renderStats(); 
 });
 
 const saveAttBtn = $('#saveAttendance');
@@ -471,7 +529,8 @@ if (confirmWarBtn) {
       if (roster.includes(name)) stat.attended++; 
       else stat.missed++; 
     });
-    appendBattleRecord({ id: Date.now(), date: new Date().toISOString().slice(0, 10), roster, outcome: 'win', role: 'attacking', opponent: 'Territory War', fiefType: 'Village', endStatus: 'Recorded', notes: '' });
+    save(); 
+    renderStats(); 
     const details = $('#confirmDetails');
     if (details) details.textContent = `${roster.length} attended · ${Math.max(0, state.data.players.length - roster.length)} did not attend`;
     const res = $('#confirmResult');
@@ -493,7 +552,7 @@ if (discordExpBtn) {
 const shareLinkBtn = $('#shareLink');
 if (shareLinkBtn) {
   shareLinkBtn.onclick = () => { 
-    const view = { groups: state.groups, players: state.players, units: state.units, data: state.data, plans: state.plans, stats: state.stats, battleHistory: state.battleHistory }; 
+    const view = { groups: state.groups, players: state.players, units: state.units, data: state.data, plans: state.plans, stats: state.stats, fiefs: state.fiefs }; 
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(view)))); 
     const url = `${location.href.split('?')[0]}?view=${encoded}`; 
     copyText(url, () => { 
@@ -503,8 +562,11 @@ if (shareLinkBtn) {
   };
 }
 
-setupControls(); 
+setupControls();
+setupSignups();
 renderBuilder(); 
+renderCampaignMap();
+renderFiefDetails();
 
 if (sessionStorage.getItem('underdogs-vault') === 'open') { 
   const loginScr = $('#loginScreen');

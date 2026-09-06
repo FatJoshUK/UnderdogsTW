@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Underdogs | Team Builder</title>
+    <title>The Underdogs | Territory War</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -12,19 +12,51 @@
   <body>
     <div class="page-glow"></div>
     <header class="topbar">
-      <a class="brand" href="#team-builder" aria-label="The Underdogs home">
+      <a class="brand" href="#home" aria-label="The Underdogs home">
         <img class="brand-crest" src="underdogs-crest.jpg" alt="The Underdogs house crest" />
         <span><b>THE UNDERDOGS</b><small>CONQUEROR'S BLADE // TERRITORY WAR</small></span>
       </a>
       <nav class="tabs" aria-label="Main navigation">
-        <button class="tab active" data-tab="builder">Team Builder</button>
+        <button class="tab active" data-tab="home">Home</button>
+        <button class="tab" data-tab="builder">Team Builder</button>
+        <button class="tab" data-tab="warplan">War Plan</button>
         <button class="tab" data-tab="vault">Admin Panel <span class="lock-dot">●</span></button>
         <button class="tab" data-tab="stats">Stats</button>
+        <button class="tab" data-tab="signup">Sign Up Sheet</button>
       </nav>
     </header>
 
     <main>
-      <section id="builder" class="panel active">
+      <section id="home" class="panel active">
+        <div class="home-hero">
+          <div class="home-hero-copy">
+            <p class="eyebrow">THE UNDERDOGS // COMMAND CENTRE</p>
+            <h1><span>THE UNDERDOGS</span><em>TERRITORY WAR</em></h1>
+            <p class="home-intro">Stand together. Hold the line. Take the territory.</p>
+          </div>
+          <img class="home-crest" src="underdogs-crest.jpg" alt="" aria-hidden="true" />
+          <div class="countdown-block" aria-live="polite">
+            <p class="countdown-kicker">NEXT TERRITORY WAR</p>
+            <div class="countdown" id="warCountdown"><div><b>--</b><span>DAYS</span></div><i>:</i><div><b>--</b><span>HOURS</span></div><i>:</i><div><b>--</b><span>MINUTES</span></div><i>:</i><div><b>--</b><span>SECONDS</span></div></div>
+            <p id="countdownTarget" class="countdown-target">Calculating next deployment…</p>
+          </div>
+        </div>
+        <section class="next-war-panel">
+          <div><p class="eyebrow">NEXT TERRITORY WAR</p><h2 id="nextWarDay">Upcoming deployment</h2></div>
+          <dl><div><dt>DAY</dt><dd id="nextWarDayDetail">—</dd></div><div><dt>TIME</dt><dd>7:30 PM</dd></div><div><dt>TIMEZONE</dt><dd>UK Time</dd></div><div><dt>STATUS</dt><dd class="status-upcoming">Upcoming</dd></div></dl>
+          <button class="primary homepage-link" data-tab-target="signup">Sign up for Territory War <span>→</span></button>
+        </section>
+        <section class="home-section">
+          <div class="section-heading"><div><p class="eyebrow">LIVE ATTENDANCE</p><h2>Warband readiness</h2></div><button class="secondary homepage-link" data-tab-target="signup">View full sign up sheet <span>→</span></button></div>
+          <div class="attendance-summary"><article class="attendance-card yes"><span>✓</span><b id="homeYesCount">0</b><h3>YES</h3><p>Confirmed to attend</p></article><article class="attendance-card maybe"><span>?</span><b id="homeMaybeCount">0</b><h3>MAYBE</h3><p>May be able to attend</p></article><article class="attendance-card no"><span>×</span><b id="homeNoCount">0</b><h3>NO</h3><p>Unable to attend</p></article></div>
+        </section>
+        <div class="home-columns">
+          <section class="home-section schedule-section"><div class="section-heading"><div><p class="eyebrow">THE CAMPAIGN RHYTHM</p><h2>Territory War Schedule</h2></div></div><p class="section-note">All times are UK time.</p><table class="schedule-table"><thead><tr><th>Day</th><th>Time</th></tr></thead><tbody><tr><td>Tuesday</td><td>7:30 PM</td></tr><tr><td>Saturday</td><td>7:30 PM</td></tr></tbody></table></section>
+          <section class="home-section"><div class="section-heading"><div><p class="eyebrow">HOUSE INFORMATION</p><h2>Quick access</h2></div></div><div class="quick-links"><button class="quick-link homepage-link" data-tab-target="signup"><b>TW Sign Up</b><span>Declare your availability →</span></button><button class="quick-link homepage-link" data-tab-target="warplan"><b>War Plan</b><span>Review the campaign map →</span></button><button class="quick-link homepage-link" data-tab-target="builder"><b>Team Builder</b><span>Prepare the warband →</span></button><button class="quick-link homepage-link" data-tab-target="stats"><b>Members & Stats</b><span>Review house records →</span></button></div></section>
+        </div>
+      </section>
+
+      <section id="builder" class="panel">
         <div class="hero">
           <div>
             <p class="eyebrow">TERRITORY WAR // SEASON PLANNER</p>
@@ -49,40 +81,56 @@
         <div id="confirmResult" class="confirm-result hidden"><b>Territory War recorded.</b><span id="confirmDetails"></span><div><button id="discordExport" class="secondary">Copy for Discord</button><button id="shareLink" class="secondary">Copy read-only link</button></div></div>
       </section>
 
+      <!-- NEW WAR PLAN PANEL -->
+      <section id="warplan" class="panel">
+        <div class="stats-heading">
+          <p class="eyebrow">TERRITORY CONTROL // CAMPAIGN MAP</p>
+          <h2>Strategic War Plan</h2>
+          <p>Click any fief to toggle its status and set attack details.</p>
+        </div>
+        <div class="warplan-container">
+          <div class="campaign-map" id="campaignMap">
+            <!-- Fief nodes will load here -->
+          </div>
+          <div class="fief-details-card" id="fiefDetailsPanel">
+            <h3>Select a Fief</h3>
+            <p>Click a node on the map to configure attack vectors and meet points.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="signup" class="panel">
+        <div class="signup-heading">
+          <p class="eyebrow">TERRITORY WAR // ATTENDANCE CALL</p>
+          <h2>Sign Up Sheet</h2>
+          <p>Enter your name and let us know whether you can attend.</p>
+        </div>
+        <div class="signup-layout">
+          <section class="signup-card">
+            <form id="signupForm" novalidate>
+              <label for="signupName">In-game / Discord name<input id="signupName" name="name" autocomplete="nickname" required placeholder="Enter your name" /></label>
+              <fieldset class="availability-fieldset"><legend>Availability</legend><div class="availability-options">
+                <button class="availability-option yes" type="button" data-availability="yes"><span>✓</span> YES</button>
+                <button class="availability-option maybe" type="button" data-availability="maybe"><span>?</span> MAYBE</button>
+                <button class="availability-option no" type="button" data-availability="no"><span>×</span> NO</button>
+              </div></fieldset>
+              <label id="signupReasonWrap" class="signup-reason" for="signupReason">Reason Why <span>Helpful for command</span><textarea id="signupReason" name="reason" placeholder="Working, might be late, can't make it…"></textarea></label>
+              <p id="signupError" class="signup-error" role="alert"></p>
+              <button id="submitSignup" class="primary" type="submit">Submit sign up <span>→</span></button>
+            </form>
+            <p class="storage-note">Sign-ups are currently saved on this device. The repository layer is ready to connect to a shared event API.</p>
+          </section>
+          <section class="signup-roster" aria-live="polite">
+            <div class="signup-roster-head"><div><p class="eyebrow">LIVE WAR ROSTER</p><h3>Attendance Roll</h3></div><span id="signupTotal" class="signup-total">0 responses</span></div>
+            <div id="signupLists" class="signup-lists"></div>
+          </section>
+        </div>
+      </section>
+
       <section id="stats" class="panel">
         <div class="stats-heading"><p class="eyebrow">TERRITORY WAR RECORD</p><h2>House Stats</h2><p>Attendance is recorded each time a roster is confirmed.</p></div>
-        <div class="stats-tabs" role="tablist" aria-label="Stats views">
-          <button class="stats-tab active" data-stats-tab="battle-log" role="tab" aria-selected="true">Battle Log</button>
-          <button class="stats-tab" data-stats-tab="attendance-leaderboard" role="tab" aria-selected="false">Attendance Leaderboard</button>
-        </div>
-        <section id="battle-log" class="stats-section active" role="tabpanel">
-          <div class="battle-dashboard">
-            <section class="quick-entry-card">
-              <div class="card-heading"><span class="summary-label">QUICK ENTRY</span><h3>Record TW Battle</h3></div>
-              <form id="battleEntryForm" class="battle-entry-form">
-                <label>Date<input id="battleDate" type="date" required /></label>
-                <label class="remember-date"><span><input id="rememberBattleDate" type="checkbox" /> Remember date</span></label>
-                <fieldset><legend>Role</legend><div class="toggle-group"><button type="button" class="toggle-option active" data-toggle="role" data-value="attacking">Attacking</button><button type="button" class="toggle-option" data-toggle="role" data-value="defending">Defending</button></div><input id="battleRole" type="hidden" value="attacking" /></fieldset>
-                <label>Opponent House<input id="opponentHouse" type="text" placeholder="Enter opponent house" /></label>
-                <label>Fief Type<select id="fiefType"><option value="Village">Village</option><option value="City">City</option><option value="Fort">Fort</option></select></label>
-                <fieldset><legend>Outcome</legend><div class="toggle-group"><button type="button" class="toggle-option active" data-toggle="outcome" data-value="win">Victory</button><button type="button" class="toggle-option" data-toggle="outcome" data-value="loss">Defeat</button></div><input id="battleOutcome" type="hidden" value="win" /></fieldset>
-                <label>End Location / Status<select id="endStatus"><option value="Secured">Secured</option><option value="Contested">Contested</option><option value="Lost">Lost</option><option value="Pending">Pending</option></select></label>
-                <label class="notes-field">Battle Notes<textarea id="battleNotes" rows="4" placeholder="Briefly describe the engagement..."></textarea></label>
-                <button class="primary save-battle-button" type="submit">Save battle record <span>→</span></button>
-              </form>
-            </section>
-            <section class="field-reports-card">
-              <div class="history-summary"><div><span class="summary-label">FIELD REPORTS</span><h3>Battle History</h3></div><div class="record-summary"><span class="wins"><b id="totalWins">0</b> Wins</span><span class="losses"><b id="totalLosses">0</b> Losses</span></div></div>
-              <div id="battleLogEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
-              <div id="battleHistoryList" class="battle-history-list"></div>
-            </section>
-          </div>
-        </section>
-        <section id="attendance-leaderboard" class="stats-section" role="tabpanel" hidden>
-          <div class="leaderboard-head"><div><span class="summary-label">ROSTER VAULT</span><h3>Attendance leaderboard</h3></div><input id="leaderboardSearch" type="search" placeholder="Search player name..." aria-label="Search player name" /></div>
-          <div id="leaderboardEmpty" class="stats-empty">Add players in the Roster Vault to start tracking attendance.</div>
-          <div id="leaderboardWrap" class="stats-table-wrap hidden"><table><thead><tr><th><button class="sort-button" data-sort-key="name">Player Name <span>↕</span></button></th><th><button class="sort-button" data-sort-key="total">Total Wars Tracked <span>↕</span></button></th><th><button class="sort-button" data-sort-key="attended">Attended Count <span>↕</span></button></th><th><button class="sort-button" data-sort-key="missed">Missed TW Count <span>↕</span></button></th><th><button class="sort-button" data-sort-key="rate">Attendance Rate <span>↕</span></button></th></tr></thead><tbody id="leaderboardBody"></tbody></table></div>
-        </section>
+        <div id="statsEmpty" class="stats-empty">No Territory Wars confirmed yet. Build a roster and lock it in.</div>
+        <div id="statsTableWrap" class="stats-table-wrap hidden"><table><thead><tr><th>House member</th><th>Attended</th><th>Did not attend</th><th>Attendance rate</th></tr></thead><tbody id="statsBody"></tbody></table></div>
       </section>
 
       <section id="vault" class="panel">
